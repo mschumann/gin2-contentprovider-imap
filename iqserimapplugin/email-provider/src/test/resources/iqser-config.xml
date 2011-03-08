@@ -1,0 +1,69 @@
+<IQser>
+	<version>1.2.2.1</version>
+	<index>
+		<path>./index</path>
+	</index>
+
+	<!-- ServiceLocator -->
+	<servicelocator>
+		<class>net.sf.iqser.plugin.mail.test.TestServiceLocator</class>
+	</servicelocator> 
+
+
+<!--	<servicelocator>-->
+<!--		<class>net.sf.iqser.plugin.filesystem.test.TestServiceLocator</class>-->
+<!--	</servicelocator>-->
+
+	<!-- CategoryBuilder -->
+	<category>
+		<class>com.iqser.core.category.DefaultCategoryBuilder</class>
+		<!-- Run every day at 23:00. every 15min for testing only -->
+		<scheduler>0 0 23 * * ?</scheduler>
+	</category>
+
+	<!-- SecurityManager -->
+	<securitymanager>
+		<class>
+			com.iqser.core.security.basic.BasicSecurityManager
+		</class>
+	</securitymanager>
+
+	<!-- Analyzer -->
+	<analyzer>
+		<task>
+			<name>SyntaxAnalyzer</name>
+			<class>
+				com.iqser.core.analyzer.task.syntax.SyntaxAnalyzerTask
+			</class>
+		</task>
+		<task>
+			<name>SemanticAnalyzer</name>
+			<class>
+				com.iqser.core.analyzer.task.semantic.SemanticAnalyzerTask
+			</class>
+		</task>
+		<task>
+			<name>PatternAnalyzer</name>
+			<class>
+				com.iqser.core.analyzer.task.pattern.PatternAnalyzerTask
+			</class>
+		</task>
+	</analyzer>
+	<plugins>
+		<!-- Plugin settings are ignored for testing -->
+		<plugin>
+			<id>net.sf.iqser.plugin.mail</id>
+			<type>MAIL-SERVER</type>
+			<name>Mail-Server Content Provider</name>
+			<vendor>IQser Technologies</vendor>
+			<provider-class>net.sf.iqser.plugin.mail.MailServerContentProvider
+			</provider-class>
+			<!-- Use a Cron formatted string to define the synchronisation schedule. -->
+			<scheduler>
+				<syncjob>0 5 * * * ?</syncjob>
+				<housekeeperjob>0 0 23 * * ?</housekeeperjob>
+			</scheduler>
+		</plugin>
+		
+	</plugins>
+</IQser>

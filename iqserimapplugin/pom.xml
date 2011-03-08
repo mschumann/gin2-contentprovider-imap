@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>net.sf.iqser.plugin.email</groupId>
+	<artifactId>iqserimapplugin</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>Email ContentProvider for iQser GIN</name>
+	<description>The goal of this project is to provide a reusable library to transform emails to content objects for iQser GIN Semantic Middleware (www.iqser.com).</description>
+	<url>http://iqserimapplugin.sourceforge.net</url>
+
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
+
+	<issueManagement>
+		<system>Trac</system>
+		<url>https://sourceforge.net/apps/trac/iqserimapplugin</url>
+	</issueManagement>
+
+	<scm>
+		<connection>
+			scm:svn:http://iqserimapplugin.svn.sourceforge.net/viewvc/iqserimapplugin/trunk
+		</connection>
+		<developerConnection>
+			scm:svn:https://iqserimapplugin.svn.sourceforge.net/svnroot/iqserimapplugin/trunk
+		</developerConnection>
+		<url>http://iqserimapplugin.svn.sourceforge.net/viewvc/iqserimapplugin</url>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>cmagnus71</id>
+			<name>Christian Magnus</name>
+			<email>christian.magnus@iqser.net</email>
+			<organization>IQser AG</organization>
+			<organizationUrl>http://www.iqser.com</organizationUrl>
+			<roles>
+				<role>Project Lead</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>jwurzer</id>
+			<name>Jörg Wurzer</name>
+			<email>joerg.wurzer@iqser.net</email>
+			<organization>IQser AG</organization>
+			<organizationUrl>http://www.iqser.com</organizationUrl>
+			<roles>
+				<role>Requirement Engineer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>robertbaban</id>
+			<name>Robert Baban</name>
+			<organization>Recognos Romania</organization>
+			<organizationUrl>http://www.recognos.ro</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>+2</timezone>
+		</developer>
+		<developer>
+			<id>agalos</id>
+			<name>Alexandru Adrian Galos</name>
+			<organization>Recognos Romania</organization>
+			<organizationUrl>http://www.recognos.ro</organizationUrl>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<timezone>+2</timezone>
+		</developer>
+		<developer>
+			<id>budisantoso-de</id>
+			<name>Kresnadi Budisantoso</name>
+			<email>Kresnadi.Budisantoso@haerter.com</email>
+			<organization>Haerter Group</organization>
+			<organizationUrl>http://www.haerter.com</organizationUrl>
+			<roles>
+				<role>Requirement Engineer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<iqser.version>1.2.2.1-SNAPSHOT</iqser.version>
+		<compileSource>1.5</compileSource>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>iqser_release</id>
+			<name>Artifactory Mirror</name>
+			<url>http://88.198.17.108:8081/artifactory/repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>iqser_release</id>
+			<url>http://88.198.17.108:8081/artifactory/repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<!-- TODO: Change to Maven Central Repository -->
+	<distributionManagement>
+		<repository>
+			<id>iqser_release</id>
+			<url>dav:http://88.198.17.108:8081/artifactory/release</url>
+			<layout>default</layout>
+		</repository>
+		<snapshotRepository>
+			<id>iqser_snapshot</id>
+			<url>
+				dav:http://88.198.17.108:8081/artifactory/snapshot
+			</url>
+			<layout>default</layout>
+		</snapshotRepository>
+		<site>
+			<id>iqserimapplugin.sourceforge.net</id>
+			<name>File ContentProvider for iQser GIN</name>
+			<url>scp://web.sourceforge.net/home/project-web/iqserimapplugin/htdocs</url>
+		</site>
+	</distributionManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<fork>true</fork>
+					<source>${compileSource}</source>
+					<target>${compileSource}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>always</forkMode>
+					<childDelegation>false</childDelegation>
+					<argLine>-Djava.awt.headless=true</argLine>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/*TestCase.java</exclude>
+					</excludes>
+					<systemProperties>
+						<property>
+							<name>testdata.dir</name>
+							<value>${basedir}/testdata</value>
+						</property>
+						<property>
+							<name>com.iqser.core.configfile</name>
+							<value>../iqser-config.xml</value>
+						</property>
+					</systemProperties>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<configuration>
+					<source>${compileSource}</source>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+							<goal>cpd-check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
+				<version>2.6</version> <executions> <execution> <phase>verify</phase> <goals> 
+				<goal>check</goal> </goals> </execution> </executions> <configuration> <configLocation>checkstyle.xml</configLocation> 
+				<failsOnError>false</failsOnError> </configuration> </plugin> -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<check>
+						<!-- TODO! raise to 85/100 -->
+						<branchRate>85</branchRate>
+						<lineRate>85</lineRate>
+						<!-- TODO! set to true -->
+						<haltOnFailure>false</haltOnFailure>
+						<totalBranchRate>85</totalBranchRate>
+						<totalLineRate>85</totalLineRate>
+						<packageLineRate>85</packageLineRate>
+						<packageBranchRate>85</packageBranchRate>
+					</check>
+
+					<instrumentation>
+						<excludes>
+							<exclude>**/*$*</exclude>
+						</excludes>
+					</instrumentation>
+				</configuration>
+				<executions>
+					<execution>
+						<id>clean</id>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check</id>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<preparationGoals>clean verify</preparationGoals>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.7</version>
+				<executions>
+					<execution>
+						<id>javadoc-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-webdav</artifactId>
+				<version>1.0-beta-1</version>
+			</extension>
+		</extensions>
+	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<configuration>
+					<targetJdk>${compileSource}</targetJdk>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>taglist-maven-plugin</artifactId>
+				<version>2.0-beta-1</version>
+				<configuration>
+					<tags>TODO, @todo, FIXME, DOCUMENT ME</tags>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
+				<version>2.6</version> </plugin> -->
+		</plugins>
+	</reporting>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>3.8.1</version>
+			<type>jar</type>
+			<scope>test</scope>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.7</version>
+			<type>jar</type>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.iqser.core</groupId>
+			<artifactId>iqser-core-api</artifactId>
+			<version>${iqser.version}</version>
+			<type>jar</type>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.iqser.core</groupId>
+			<artifactId>iqser-core-plugin</artifactId>
+			<version>${iqser.version}</version>
+			<type>jar</type>
+			<optional>false</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.iqser.core</groupId>
+			<artifactId>iqser-test-api</artifactId>
+			<version>${iqser.version}</version>
+			<type>jar</type>
+			<optional>false</optional>
+		</dependency>		
+	</dependencies>
+
+	<modules>		
+		<module>email-provider</module>
+	</modules>
+
+</project>
