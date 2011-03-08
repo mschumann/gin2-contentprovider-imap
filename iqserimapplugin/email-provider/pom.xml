@@ -8,8 +8,11 @@
 	</parent>
 	<groupId>net.sf.iqser.plugin.email</groupId>
 	<artifactId>email-provider</artifactId>
+	<name>Email Content Provider</name>
 	<version>1.0-SNAPSHOT</version>
 
+	<description>A Content Provider to support IMAP based Email-Servers for iQser GIN Middleware</description>
+	<url>http://iqserimapplugin.sourceforge.net/</url>
 	<dependencies>
 		<dependency>
 			<groupId>net.sf.iqser.plugin.file</groupId>
