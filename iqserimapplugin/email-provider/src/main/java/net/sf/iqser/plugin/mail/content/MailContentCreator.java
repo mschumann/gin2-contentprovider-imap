@@ -1,5 +1,6 @@
 package net.sf.iqser.plugin.mail.content;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -24,7 +25,9 @@ import net.sf.iqser.plugin.file.parser.FileParser;
 import net.sf.iqser.plugin.file.parser.FileParserException;
 import net.sf.iqser.plugin.file.parser.FileParserFactory;
 import net.sf.iqser.plugin.mail.MailServerUtils;
+import net.sf.iqser.plugin.mail.ZipAttachment;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import com.iqser.core.exception.IQserRuntimeException;
@@ -33,8 +36,9 @@ import com.iqser.core.model.Content;
 
 /**
  * creates mail content from mails
+ * 
  * @author alexandru.galos
- *
+ * 
  */
 public class MailContentCreator {
 
@@ -49,15 +53,17 @@ public class MailContentCreator {
 	/**
 	 * Default Logger for this class.
 	 */
-	private static Logger logger = Logger
-			.getLogger(MailContentCreator.class);
-	
+	private static Logger logger = Logger.getLogger(MailContentCreator.class);
 
 	/**
 	 * create content from email (email-content and attachment content)
-	 * @param contentURL - the message-id
-	 * @param keyAttributesList - the key attributes from plugin.xml
-	 * @param providerID - the id of the mail provider
+	 * 
+	 * @param contentURL
+	 *            - the message-id
+	 * @param keyAttributesList
+	 *            - the key attributes from plugin.xml
+	 * @param providerID
+	 *            - the id of the mail provider
 	 * @return a mail content that contains the mail and its attachments
 	 */
 	public MailContent getContent(String contentURL,
@@ -76,7 +82,7 @@ public class MailContentCreator {
 		String folderN = null;
 		Content content = null;
 		try {
-			//search each folder for a certain mail message
+			// search each folder for a certain mail message
 			for (String folderName : folders) {
 				Folder folder = store.getFolder(folderName);
 				Message message = msu.identifyMessage(folder, contentURL);
@@ -104,8 +110,6 @@ public class MailContentCreator {
 					content.addAttribute(attributeM);
 				}
 
-			
-			
 			}
 
 		} catch (Exception e) {
@@ -119,20 +123,46 @@ public class MailContentCreator {
 		}
 		assertProviderIDToContent(providerID, mailContent);
 		updateKeyAttributes(content, keyAttributesList);
+		Collection<Content> attachmentContents = mailContent
+				.getAttachmentContents();
+		updateKeyAttachmentAttributes(attachmentContents, keyAttributesList);
+
 		return mailContent;
+	}
+
+	private void updateKeyAttachmentAttributes(
+			Collection<Content> attachmentContents,
+			Collection<String> keyAttributes) {
+
+		for (Content content : attachmentContents) {
+			updateKeyAttributes(content, keyAttributes);
+		}
+	}
+
+	private void updateMappingAttributeNames(
+			Collection<Content> attachmentContents,
+			Map<String, String> mappingAttributes) {
+
+		for (Content content : attachmentContents) {
+			updateAttributes(content, mappingAttributes);
+		}
 	}
 
 	/**
 	 * create content from email (email-content and attachment content) from
 	 * input stream
-	 * @param inputStream - the input stream of the mail that contains
-	 * also the header and the attachments
-	 * @param keyAttributesList - the key attributes from the plugin.xml
-	 * @param providerID - the mail provider id
+	 * 
+	 * @param inputStream
+	 *            - the input stream of the mail that contains also the header
+	 *            and the attachments
+	 * @param keyAttributesList
+	 *            - the key attributes from the plugin.xml
+	 * @param providerID
+	 *            - the mail provider id
 	 * @return - a mail content that has also attachment contents
 	 */
 	public MailContent getContent(InputStream inputStream,
-			Collection<String> keyAttributesList,String providerID) {
+			Collection<String> keyAttributesList, String providerID) {
 
 		Message message = null;
 		try {
@@ -145,14 +175,14 @@ public class MailContentCreator {
 		MailContent mailContent = createMailContent(message);
 		assertProviderIDToContent(providerID, mailContent);
 		updateKeyAttributes(mailContent.getContent(), keyAttributesList);
-		
-		
+
 		return mailContent;
 	}
 
 	/**
-	 * assert provider to mail content and attachment content
-	 * updates attributes to the content
+	 * assert provider to mail content and attachment content updates attributes
+	 * to the content
+	 * 
 	 * @param providerID
 	 * @param mailContent
 	 */
@@ -161,10 +191,12 @@ public class MailContentCreator {
 		Content content1 = mailContent.getContent();
 		content1.setProvider(providerID);
 		content1.setType("EMAIL");
-	
+
 		updateAttributes(content1, attributeMap);
 		Collection<Content> attachmentContents = mailContent
 				.getAttachmentContents();
+		updateMappingAttributeNames(attachmentContents, attributeMap);
+
 		for (Content content : attachmentContents) {
 			content.setProvider(providerID);
 		}
@@ -203,8 +235,10 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * create a mail content from a message 
-	 * @param message - the mail message
+	 * create a mail content from a message
+	 * 
+	 * @param message
+	 *            - the mail message
 	 * @return a content that contains also the attachments
 	 */
 	public MailContent createMailContent(Message message) {
@@ -218,7 +252,7 @@ public class MailContentCreator {
 
 			content = new Content();
 			String contentURL = message.getHeader("MESSAGE-ID")[0];
-			content.setContentUrl(contentURL );
+			content.setContentUrl(contentURL);
 			String subject = message.getSubject();
 			if (message.getFolder() != null) {
 				Attribute attribute = createAttribute("MESSAGE_FOLDER", message
@@ -264,11 +298,14 @@ public class MailContentCreator {
 				for (int i = 0; i < count; i++) {
 					BodyPart bodyPart = ((Multipart) messageContent)
 							.getBodyPart(i);
-					Content attachmentContent = extractPartMessage(content,
-							bodyPart, index);
-					if (attachmentContent != null) {
-						mc.addAttachmentContent(attachmentContent);
-						index++;
+					Collection<Content> attachmentContents = extractPartMessage(
+							content, bodyPart, index);
+					if (attachmentContents != null) {
+						for (Content attachmentContent : attachmentContents) {
+							mc.addAttachmentContent(attachmentContent);
+							index++;
+						}
+
 					}
 				}
 
@@ -292,17 +329,24 @@ public class MailContentCreator {
 
 	/**
 	 * used for extracting multi part messages
-	 * @param content - the content that is created in the object graph
-	 * @param messageContent - the message content of the mail
-	 * @param index - the index of the part in a multi-part message
+	 * 
+	 * @param content
+	 *            - the content that is created in the object graph
+	 * @param messageContent
+	 *            - the message content of the mail
+	 * @param index
+	 *            - the index of the part in a multi-part message
 	 * @return - return the mail content without its attachments
 	 * @throws MessagingException
 	 * @throws IOException
 	 * @throws FileParserException
 	 */
-	private Content extractPartMessage(Content content, Object messageContent,
-			int index) throws MessagingException, IOException, FileParserException {
+	private Collection<Content> extractPartMessage(Content content,
+			Object messageContent, int index) throws MessagingException,
+			IOException, FileParserException {
+
 		Attribute attributeM;
+		Collection<Content> attachmentContents = new ArrayList<Content>();
 		String fileName = ((Part) messageContent).getFileName();
 
 		if (fileName == null) {
@@ -317,51 +361,73 @@ public class MailContentCreator {
 
 			InputStream inputStream = ((Part) messageContent).getInputStream();
 
-			Content attachmentContent = createAttachmentContent(inputStream);//fscp.getContent(inputStream);
-			if (attachmentContent != null) {
-				attachmentContent.setContentUrl(content.getContentUrl()
-						+ fileName);
+			if (fileName.endsWith(".zip")) {
 
-				Attribute attribute = new Attribute();
-				attribute.setKey(false);
-				attribute.setName("ATTACHED_TO");
-				attribute.setValue(content.getContentUrl());
-				attachmentContent.addAttribute(attribute);
+				Collection<Content> zipAttachments = createZipAttachmentContent(
+						inputStream, content, index, fileName);
+				return zipAttachments;
 
-				attributeM = createAttribute("MESSAGE_ATTACHMENTS_NAME_"
-						+ index, fileName, true);
-				content.addAttribute(attributeM);
+			} else {
+				Content attachmentContent = createAttachmentContent(inputStream);// fscp.getContent(inputStream);
+				if (attachmentContent != null) {
+					attachmentContent.setContentUrl(content.getContentUrl()
+							+ fileName);
+
+					Attribute attribute = new Attribute();
+					attribute.setKey(false);
+					attribute.setName("ATTACHED_TO");
+					attribute.setValue(content.getContentUrl());
+					attachmentContent.addAttribute(attribute);
+
+					attributeM = createAttribute("MESSAGE_ATTACHMENTS_NAME_"
+							+ index, fileName, true);
+					content.addAttribute(attributeM);
+					attachmentContents.add(attachmentContent);
+				}
 			}
-			return attachmentContent;
+			return attachmentContents;
 
 		}
 	}
 
-	/**
-	 * create an attachment content from an input stream
-	 * @param inputStream - the input stream of the message body
-	 * @return an attachment content
-	 * @throws FileParserException
-	 */
-	private Content createAttachmentContent(InputStream inputStream) throws FileParserException {
-		
-		
-		FileParserFactory parserFactory = FileParserFactory.getInstance();
-		FileParser parser = parserFactory.getFileParser(inputStream);
+	private Collection<Content> createZipAttachmentContent(
+			InputStream inputStream, Content content, int index, String filename)
+			throws IOException, FileParserException {
 
-		
-			if (parser != null){ 
-				Content content = parser.getContent(null,inputStream);
-				return content;
-			}
-		
-			return null;
+		ZipAttachment za = new ZipAttachment();
+		return za.createZipAttachments(inputStream, content, filename, index);
+
 	}
 
-	
-	
+	/**
+	 * create an attachment content from an input stream
+	 * 
+	 * @param inputStream
+	 *            - the input stream of the message body
+	 * @return an attachment content
+	 * @throws FileParserException
+	 * @throws IOException
+	 */
+	private Content createAttachmentContent(InputStream inputStream)
+			throws FileParserException, IOException {
+
+		byte[] byteArray = IOUtils.toByteArray(inputStream);
+		FileParserFactory parserFactory = FileParserFactory.getInstance();
+		FileParser parser = parserFactory
+				.getFileParser(new ByteArrayInputStream(byteArray));
+
+		if (parser != null) {
+			Content content = parser.getContent(null, new ByteArrayInputStream(
+					byteArray));
+			return content;
+		}
+
+		return null;
+	}
+
 	/**
 	 * create address attributes for content
+	 * 
 	 * @param content
 	 * @param addresses
 	 * @param type
@@ -370,19 +436,20 @@ public class MailContentCreator {
 			String type) {
 
 		if (addresses != null) {
-			
+
 			int index = 0;
 			Attribute attributeM;
 			for (Address address : addresses) {
 				if (address instanceof InternetAddress) {
 					String addressValue = ((InternetAddress) address)
 							.getAddress();
-					attributeM = createAttribute(type + "_MAIL_"+index, addressValue,
-							false);
+					attributeM = createAttribute(type + "_MAIL_" + index,
+							addressValue, false);
 					content.addAttribute(attributeM);
 
 					String name = getName(addressValue);
-					attributeM = createAttribute(type + "_NAME_"+index, name, false);
+					attributeM = createAttribute(type + "_NAME_" + index, name,
+							false);
 					content.addAttribute(attributeM);
 					index++;
 				}
@@ -392,6 +459,7 @@ public class MailContentCreator {
 
 	/**
 	 * get the name of the sender from the email address
+	 * 
 	 * @param addressValue
 	 * @return
 	 */
@@ -402,13 +470,14 @@ public class MailContentCreator {
 		if (index == -1) {
 			throw new IQserRuntimeException("Email address not correct");
 		}
-		//return the first part of the email address
+		// return the first part of the email address
 		return addressValue.substring(0, index);
 	}
 
 	/**
 	 * creates an attribute for a content
-	 * @param name 
+	 * 
+	 * @param name
 	 * @param value
 	 * @param key
 	 * @return the attribute
@@ -420,10 +489,11 @@ public class MailContentCreator {
 		attribute.setValue(value);
 		return attribute;
 	}
-	
+
 	/**
-	 * get the message ids from the mail server 
-	 * from each folder that is specified in the configuration file
+	 * get the message ids from the mail server from each folder that is
+	 * specified in the configuration file
+	 * 
 	 * @return the collection of message-ids (collection of string)
 	 */
 	public Collection getMailServerURLs() {
@@ -440,7 +510,7 @@ public class MailContentCreator {
 		Store store = msu.attemptConnectionMailServer(sslConnection);
 
 		try {
-			//for each message from each folder get the message-id
+			// for each message from each folder get the message-id
 			for (String folderName : folders) {
 				logger.info("extracting message urls from folder:" + folderName);
 				Folder folder = store.getFolder(folderName);
@@ -466,19 +536,22 @@ public class MailContentCreator {
 
 		return contentURLs;
 	}
-	
+
 	/**
 	 * deletes a mail from the server
-	 * @param mailURL - the message-id
-	 * @param folderName - the folder from the server where the message is found
-	 * @param sslConnection - (true or false according to if the connection is secured
-	 * or not)
+	 * 
+	 * @param mailURL
+	 *            - the message-id
+	 * @param folderName
+	 *            - the folder from the server where the message is found
+	 * @param sslConnection
+	 *            - (true or false according to if the connection is secured or
+	 *            not)
 	 */
 	public void deleteMessageFromServer(String mailURL, String folderName,
 			String sslConnection) {
 
-		
-		//connect to the server
+		// connect to the server
 		Store store = msu.attemptConnectionMailServer(sslConnection);
 		try {
 			Folder folder = store.getFolder(folderName);
@@ -489,7 +562,7 @@ public class MailContentCreator {
 			message.setFlag(Flag.DELETED, true);
 			folder.close(true);
 			store.close();
-			
+
 		} catch (MessagingException e) {
 			throw new IQserRuntimeException(e);
 		}
@@ -519,48 +592,55 @@ public class MailContentCreator {
 	public Map<String, String> getAttributeMap() {
 		return attributeMap;
 	}
-	
+
 	/**
-	 * updates the key attributes of a content graph
-	 * the attributes that are not in {@link keyAttributeList} are
-	 * set as non-key attributes 
-	 * @param content - the mail content 
-	 * @param keyAttributesList - the key attributes for the content
+	 * updates the key attributes of a content graph the attributes that are not
+	 * in {@link keyAttributeList} are set as non-key attributes
+	 * 
+	 * @param content
+	 *            - the mail content
+	 * @param keyAttributesList
+	 *            - the key attributes for the content
 	 */
-	public void updateKeyAttributes(Content content, Collection keyAttributesList) {
+	public void updateKeyAttributes(Content content,
+			Collection keyAttributesList) {
 
 		Collection attributes = content.getAttributes();
 
-		//check if attributes must be changed to key attribute
+		// check if attributes must be changed to key attribute
 		for (Object attribute : attributes) {
 
-			String name = ((Attribute)attribute).getName();
-
+			String name = ((Attribute) attribute).getName();
+			
+			boolean isUpdated = false;
 			for (Object keyAttrObject : keyAttributesList) {
-				String keyAttr = (String)keyAttrObject;
-				boolean contains = name.contains(keyAttr);
+				String keyAttr = (String) keyAttrObject;
+				boolean contains = name.toUpperCase().contains(keyAttr);
 				if (contains) {
-					((Attribute)attribute).setKey(true);
-				} else
-					((Attribute)attribute).setKey(false);
+					isUpdated = true;
+					break;
+				}
 			}
-
+			((Attribute) attribute).setKey(isUpdated);
 		}
 
 	}
-	
+
 	/**
 	 * updates the attributes according to the configuration plugin.xml
-	 * @param content a mail or attachment content
-	 * @param attributeMappings the new attributes
+	 * 
+	 * @param content
+	 *            a mail or attachment content
+	 * @param attributeMappings
+	 *            the new attributes
 	 */
-	public  void updateAttributes(Content content, Map attributeMappings) {
+	public void updateAttributes(Content content, Map attributeMappings) {
 
 		Collection attributes = content.getAttributes();
-		
-		//each attribute is checked in order to see if it must be changed
+
+		// each attribute is checked in order to see if it must be changed
 		for (Object attribute : attributes) {
-			String name = ((Attribute)attribute).getName();
+			String name = ((Attribute) attribute).getName();
 			if (attributeMappings.containsKey(name)) {
 				name = (String) attributeMappings.get(name);
 				((Attribute) attribute).setName(name);

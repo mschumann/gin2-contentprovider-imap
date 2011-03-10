@@ -47,9 +47,9 @@ public class MailServerUtils {
 		Message[] messages = folder
 				.search(new HeaderTerm("MESSAGE-ID", mailID));
 
-		if (messages.length != 1) {
-			logger.fatal("several messages have the same id");
-			throw new IQserRuntimeException("Several mails identified");
+		if (messages.length == 0) {
+			logger.fatal("no messages with specified id identified");
+			throw new IQserRuntimeException("no messages with specified id identified");
 		} else
 			return messages[0];
 	}
