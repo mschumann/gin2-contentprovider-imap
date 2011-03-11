@@ -21,8 +21,8 @@ import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.search.ComparisonTerm;
+import javax.mail.search.ReceivedDateTerm;
 import javax.mail.search.SearchTerm;
-import javax.mail.search.SentDateTerm;
 
 import net.sf.iqser.plugin.file.parser.FileParser;
 import net.sf.iqser.plugin.file.parser.FileParserException;
@@ -522,7 +522,7 @@ public class MailContentCreator {
 		try {
 			// for each message from each folder get the message-id
 			Date date = new Date(sinceTime);
-			SearchTerm newer = new SentDateTerm(ComparisonTerm.GT, date);
+			SearchTerm newer = new ReceivedDateTerm(ComparisonTerm.GT, date);
 			Message[] messages = null;
 
 			for (String folderName : folders) {
