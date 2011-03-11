@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,8 +32,9 @@ import com.iqser.core.plugin.AbstractContentProvider;
 
 /**
  * executes operations on an object graph
+ * 
  * @author alexandru.galos
- *
+ * 
  */
 public class MailServerContentProvider extends AbstractContentProvider {
 
@@ -46,11 +48,17 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	private String sslPort;
 
+	private String port;
+	
+	private String cache;
+
 	private Collection<String> keyAttributesList;
 
 	private Collection<String> folderAttributes;
 
 	private Map<String, String> attributeMappings = new HashMap<String, String>();
+
+	private static long time = new Date(0).getTime();
 
 	/**
 	 * Default Logger for this class.
@@ -60,13 +68,16 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * get the binary information from a content mail
-	 * @param content - the content that corresponds to an email from the
-	 * mail server
+	 * 
+	 * @param content
+	 *            - the content that corresponds to an email from the mail
+	 *            server
 	 */
-	
-	/*identify the message from the content url
-	get the input stream of the mail
-	transform the input stream in bytes*/
+
+	/*
+	 * identify the message from the content url get the input stream of the
+	 * mail transform the input stream in bytes
+	 */
 	public byte[] getBinaryData(Content content) {
 
 		logger.info("getBinaryData for content with url:"
@@ -82,12 +93,18 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 		byte[] byteArray = null;
 
+		if (folderAttributes.size() == 0)
+			try {
+				folderAttributes.add(store.getDefaultFolder().getName());
+			} catch (MessagingException e1) {
+				throw new IQserRuntimeException(e1);
+			}
 		try {
 			for (String folderName : folderAttributes) {
-		
+
 				Folder folder = store.getFolder(folderName);
 				Message message = msu.identifyMessage(folder, contentUrl);
-			
+
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				message.writeTo(baos);
 				byteArray = baos.toByteArray();
@@ -110,9 +127,10 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * corresponding action to {@link MailServerContentProvider}
-	 * is "delete"
-	 * @param content - the content from object graph
+	 * corresponding action to {@link MailServerContentProvider} is "delete"
+	 * 
+	 * @param content
+	 *            - the content from object graph
 	 * @return a collection of actions for a content
 	 */
 	@Override
@@ -128,15 +146,41 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	public Content getContent(String contentURL) {
 
 		logger.info("get content info for " + contentURL);
-		MailContentCreator mc = getMailContentCreator();
-		Content content = mc.getContent(contentURL, keyAttributesList, this.getId())
-				.getContent();
+		MailContentCreator mcc = getMailContentCreator();
+
+		Content content = null;
+		MailContent mc = null;
+		if (isEmailURL(contentURL)) {
+
+			mc = mcc.getContent(contentURL, keyAttributesList, this.getId());
+			content = mc.getContent();
+		} else {
+			int index = contentURL.indexOf(">") + 1;
+			String mailContentURL = contentURL.substring(0, index);
+			mc = mcc.getContent(mailContentURL, keyAttributesList, this.getId());
+			Collection<Content> attachmentContents = mc.getAttachmentContents();
+			for (Content contentAtt : attachmentContents) {
+				if (contentAtt.getContentUrl().equalsIgnoreCase(contentURL)) {
+					content = contentAtt;
+					break;
+				}
+			}
+		}
+
 		return content;
 
 	}
 
+	private boolean isEmailURL(String contentURL) {
+		if (contentURL.endsWith(">"))
+			return true;
+		else
+			return false;
+	}
+
 	/**
 	 * creates an instance to {@link MailContentCreator}
+	 * 
 	 * @return
 	 */
 	private MailContentCreator getMailContentCreator() {
@@ -151,7 +195,9 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		mc.setFolders(folderAttributes);
 		mc.setSslPort(sslPort);
 		mc.setAttributeMap(attributeMappings);
-
+		if (port != null)
+			mc.setPort(Integer.parseInt(port));
+		mc.setCache(cache);
 		return mc;
 	}
 
@@ -181,6 +227,8 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		passWord = (String) params.get("PASSWORD");
 		sslConnection = (String) params.getProperty("SSL-CONNECTION");
 		sslPort = (String) params.getProperty("SSL-PORT");
+		port = (String) params.getProperty("EMAIL-PORT");
+		setCache((String) params.getProperty("EMAIL-CACHE"));
 
 		String keyAttributes = (String) params.get("KEY-ATTRIBUTES");
 		String mailLocations = (String) params.get("EMAIL-FOLDER");
@@ -190,8 +238,9 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		folderAttributes = extractParameters(mailLocations, regex);
 
 		// default folder attributes
-		if (folderAttributes.size() == 0)
+		if (folderAttributes.size() == 0) {
 			folderAttributes.add("INBOX");
+		}
 
 		String mappings = (String) params.get("ATTRIBUTE.MAPPINGS");
 		JSONObject json = null;
@@ -216,13 +265,15 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * extract key attributes from the configuration file plugin.xml
-	 * @param keyAttributes - the string with the specified attributes
-	 * @param regex 
+	 * 
+	 * @param keyAttributes
+	 *            - the string with the specified attributes
+	 * @param regex
 	 * @return
 	 */
 	private Collection<String> extractParameters(String keyAttributes,
 			String regex) {
-		
+
 		if (keyAttributes != null) {
 			String[] keyAttrs = keyAttributes.trim().split(regex);
 			Collection<String> keyAttributesList = new ArrayList<String>();
@@ -244,8 +295,11 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * perform the operations returned by {@value getActions(content)} on a content
-	 * @param action - the action to be performed
+	 * perform the operations returned by {@value getActions(content)} on a
+	 * content
+	 * 
+	 * @param action
+	 *            - the action to be performed
 	 */
 	@Override
 	public void performAction(String action, Content content) {
@@ -256,28 +310,29 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 		MailContentCreator mailContentCreator = getMailContentCreator();
 
-		if (actions.contains(action.toLowerCase()) &&
-			action.toLowerCase().equals("delete")){
-				performDeleteAction(content,  mailContentCreator);
+		if (actions.contains(action.toLowerCase())
+				&& action.toLowerCase().equals("delete")) {
+			performDeleteAction(content, mailContentCreator);
 		}
 
 	}
 
 	/**
 	 * perform delete operation on a certain content
+	 * 
 	 * @param content
 	 * @param mailContentCreator
 	 */
-	private void performDeleteAction(Content content, 
+	private void performDeleteAction(Content content,
 			MailContentCreator mailContentCreator) {
 		try {
 			// delete mail message
 			String contentUrl = content.getContentUrl();
-			MailContent mailContent = mailContentCreator.getContent(
-					contentUrl, keyAttributesList, this.getId());
+			MailContent mailContent = mailContentCreator.getContent(contentUrl,
+					keyAttributesList, this.getId());
 			String mailURL = mailContent.getContent().getContentUrl();
-			String folderName = content
-					.getAttributeByName("MESSAGE_FOLDER").getValue();
+			String folderName = content.getAttributeByName("MESSAGE_FOLDER")
+					.getValue();
 			mailContentCreator.deleteMessageFromServer(mailURL, folderName,
 					sslConnection);
 
@@ -296,25 +351,24 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * synchronize the object graph with the mail server
-	 * if there are more mails on the server we need to add them
-	 * to the object graph
+	 * synchronize the object graph with the mail server if there are more mails
+	 * on the server we need to add them to the object graph
 	 */
 	@Override
 	/*
-	 get the mail message-ids from the mail-server
-	 if there are messages on the server which are not
-	 in the object graph create content objects for them 
-	 and add them to the object graph
+	 * get the mail message-ids from the mail-server if there are messages on
+	 * the server which are not in the object graph create content objects for
+	 * them and add them to the object graph
 	 */
 	public void doSynchonization() {
 
+		long nexttime = System.currentTimeMillis();
 		try {
 
 			MailContentCreator mailContentCreator = getMailContentCreator();
 
 			Collection<String> contentURLs = mailContentCreator
-					.getMailServerURLs();
+					.getMailServerURLs(time);
 
 			for (String contentURL : contentURLs) {
 				if (!isExistingContent(contentURL)) {
@@ -330,22 +384,21 @@ public class MailServerContentProvider extends AbstractContentProvider {
 					}
 				}
 			}
+			time = nexttime;
 		} catch (IQserException e) {
 			throw new IQserRuntimeException(e);
-		}
-
+		}		
 	}
 
 	/**
-	 * delete the contents from the object graphs if 
-	 * there are not in the email server
+	 * delete the contents from the object graphs if there are not in the email
+	 * server
 	 */
 	@Override
 	/*
-	  extract the mail message-ids from a specific server
-	  and the contents from the object graph
-	  traverse the objects from the content graph
-	  and remove the objects that are not on the mail-server
+	 * extract the mail message-ids from a specific server and the contents from
+	 * the object graph traverse the objects from the content graph and remove
+	 * the objects that are not on the mail-server
 	 */
 	public void doHousekeeping() {
 
@@ -354,7 +407,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			MailContentCreator mailContentCreator = getMailContentCreator();
 
 			Collection<String> contentURLs = mailContentCreator
-					.getMailServerURLs();
+					.getMailServerURLs(0);
 
 			Collection contents = getExistingContents();
 
@@ -371,6 +424,12 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		}
 	}
 
+	public void setCache(String cache) {
+		this.cache = cache;
+	}
 
+	public String getCache() {
+		return cache;
+	}
 
 }

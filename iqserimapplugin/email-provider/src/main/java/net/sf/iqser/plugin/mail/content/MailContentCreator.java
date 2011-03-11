@@ -20,6 +20,9 @@ import javax.mail.Part;
 import javax.mail.Store;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.ComparisonTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SentDateTerm;
 
 import net.sf.iqser.plugin.file.parser.FileParser;
 import net.sf.iqser.plugin.file.parser.FileParserException;
@@ -49,6 +52,8 @@ public class MailContentCreator {
 	private Collection<String> folders;
 	private MailServerUtils msu = new MailServerUtils();;
 	private String sslPort;
+	private int port;
+	private String cache;
 	private Map<String, String> attributeMap;
 	/**
 	 * Default Logger for this class.
@@ -69,10 +74,7 @@ public class MailContentCreator {
 	public MailContent getContent(String contentURL,
 			Collection<String> keyAttributesList, String providerID) {
 
-		msu.setMailServer(mailServer);
-		msu.setUserName(userName);
-		msu.setPassWord(passWord);
-		msu.setSslPort(sslPort);
+		setMailServerUtils();
 
 		MailContent mailContent = null;
 
@@ -128,6 +130,14 @@ public class MailContentCreator {
 		updateKeyAttachmentAttributes(attachmentContents, keyAttributesList);
 
 		return mailContent;
+	}
+
+	private void setMailServerUtils() {
+		msu.setMailServer(mailServer);
+		msu.setUserName(userName);
+		msu.setPassWord(passWord);
+		msu.setSslPort(sslPort);
+		msu.setPort(port);
 	}
 
 	private void updateKeyAttachmentAttributes(
@@ -380,7 +390,7 @@ public class MailContentCreator {
 					attachmentContent.addAttribute(attribute);
 
 					attributeM = createAttribute("MESSAGE_ATTACHMENTS_NAME_"
-							+ index, fileName, true);
+							+ index, content.getContentUrl() + fileName, true);
 					content.addAttribute(attributeM);
 					attachmentContents.add(attachmentContent);
 				}
@@ -496,7 +506,7 @@ public class MailContentCreator {
 	 * 
 	 * @return the collection of message-ids (collection of string)
 	 */
-	public Collection getMailServerURLs() {
+	public Collection getMailServerURLs(long sinceTime) {
 
 		logger.info("extracting messages urls");
 		MailServerUtils msu = new MailServerUtils();
@@ -511,12 +521,21 @@ public class MailContentCreator {
 
 		try {
 			// for each message from each folder get the message-id
+			Date date = new Date(sinceTime);
+			SearchTerm newer = new SentDateTerm(ComparisonTerm.GT, date);
+			Message[] messages = null;
+
 			for (String folderName : folders) {
 				logger.info("extracting message urls from folder:" + folderName);
 				Folder folder = store.getFolder(folderName);
 				folder.open(Folder.READ_ONLY);
-				Message[] messages = folder.getMessages();
+				logger.info(folder.getName() + " " + folder.getMessageCount());
+				if (getCache().equalsIgnoreCase("true"))
+					messages = folder.search(newer);
+				else 
+					messages = folder.getMessages();
 				for (Message message : messages) {
+
 					String[] header = message.getHeader("MESSAGE-ID");
 					contentURLs.add(header[0]);
 				}
@@ -611,7 +630,7 @@ public class MailContentCreator {
 		for (Object attribute : attributes) {
 
 			String name = ((Attribute) attribute).getName();
-			
+
 			boolean isUpdated = false;
 			for (Object keyAttrObject : keyAttributesList) {
 				String keyAttr = (String) keyAttrObject;
@@ -648,5 +667,21 @@ public class MailContentCreator {
 
 		}
 
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setCache(String cache) {
+		this.cache = cache;
+	}
+
+	public String getCache() {
+		return cache;
 	}
 }

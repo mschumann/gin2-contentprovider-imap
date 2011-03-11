@@ -27,6 +27,7 @@ public class MailServerUtils {
 	private String sslPort;
 
 	private Store store;
+	private int port;
 	private static Logger logger = Logger.getLogger(MailServerUtils.class);
 
 	/**
@@ -115,7 +116,10 @@ public class MailServerUtils {
 			Session session = Session.getDefaultInstance(props);
 			store = session.getStore("imap");
 
-			store.connect(mailServer, userName, passWord);
+			if (port!=0)
+				store.connect(mailServer,port, userName, passWord);
+			else
+				store.connect(mailServer, userName, passWord);
 
 		} catch (NoSuchProviderException e) {
 			throw new IQserRuntimeException(e);
@@ -157,5 +161,13 @@ public class MailServerUtils {
 
 	public String getSslPort() {
 		return sslPort;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public int getPort() {
+		return port;
 	}
 }

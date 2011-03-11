@@ -57,5 +57,16 @@
 			<param-name>EMAIL-FOLDER</param-name>
 			<param-value><!-- [folder1][folder2] --></param-value>
 		</init-param>
+		<init-param>
+		<!-- port of the email server default 143 -->
+			<param-name>EMAIL-PORT</param-name>
+			<param-value><!-- --></param-value>
+		</init-param>
+		<init-param>
+		<!-- flag for retrieving latest emails from the last synchronization
+		default is true -->
+			<param-name>EMAIL-CACHE</param-name>
+			<param-value><!--true--></param-value>
+		</init-param>
 	</plugin>
 </iqser>
