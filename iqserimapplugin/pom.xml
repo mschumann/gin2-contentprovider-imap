@@ -211,6 +211,7 @@
 				<artifactId>maven-pmd-plugin</artifactId>
 				<configuration>
 					<source>${compileSource}</source>
+					<linkXref>true</linkXref>
 				</configuration>
 				<executions>
 					<execution>
@@ -243,6 +244,7 @@
 				<configuration>
 					<configLocation>checkstyle/checkstyle.xml</configLocation>
 					<failsOnError>true</failsOnError>
+					<linkXref>true</linkXref>
 				</configuration>
 			</plugin>
 			<plugin>
