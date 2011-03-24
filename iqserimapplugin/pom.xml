@@ -248,7 +248,7 @@
 				</executions>
 				<configuration>
 					<configLocation>checkstyle/checkstyle.xml</configLocation>
-					<failsOnError>true</failsOnError>
+					<failsOnError>false</failsOnError>
 					<linkXref>true</linkXref>
 				</configuration>
 			</plugin>
