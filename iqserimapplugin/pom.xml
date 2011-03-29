@@ -6,7 +6,7 @@
 	<groupId>net.sf.iqser.plugin.email</groupId>
 	<artifactId>iqserimapplugin</artifactId>
 	<version>1.0-SNAPSHOT</version>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 
 	<name>Email ContentProvider for iQser GIN</name>
 	<description>The goal of this project is to provide a reusable library
@@ -207,7 +207,7 @@
 						</property>
 						<property>
 							<name>com.iqser.core.configfile</name>
-							<value>../iqser-config.xml</value>
+							<value>iqser-config.xml</value>
 						</property>
 					</systemProperties>
 				</configuration>
@@ -247,7 +247,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<configLocation>checkstyle/checkstyle.xml</configLocation>
+					<configLocation>checkstyle.xml</configLocation>
 					<failsOnError>false</failsOnError>
 					<linkXref>true</linkXref>
 				</configuration>
@@ -376,7 +376,7 @@
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
-					<configLocation>checkstyle/checkstyle.xml</configLocation>
+					<configLocation>checkstyle.xml</configLocation>
 				</configuration>
 			</plugin>
 		</plugins>
