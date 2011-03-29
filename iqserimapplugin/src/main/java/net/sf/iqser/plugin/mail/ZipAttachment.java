@@ -16,8 +16,23 @@ import net.sf.iqser.plugin.file.parser.FileParserFactory;
 import com.iqser.core.model.Attribute;
 import com.iqser.core.model.Content;
 
+/**
+ * zip attachment creator.
+ * @author alexandru.galos
+ *
+ */
 public class ZipAttachment {
 
+	/**
+	 * creates zip attachments.
+	 * @param zipIS the input stream of the zip file
+	 * @param mailCont   the mail content object
+	 * @param fileName   the zip file name
+	 * @param index      the index of the entry in a zip attachment
+	 * @return   a collection of attachment contents
+	 * @throws IOException io exception if exception occurs while reading the file
+	 * @throws FileParserException  exception occurs while parsing the file
+	 */
 	public Collection<Content> createZipAttachments(InputStream zipIS,
 			Content mailCont, String fileName, int index) throws IOException,
 			FileParserException {

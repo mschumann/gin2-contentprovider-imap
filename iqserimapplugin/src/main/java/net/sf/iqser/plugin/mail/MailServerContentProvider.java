@@ -31,33 +31,66 @@ import com.iqser.core.model.Content;
 import com.iqser.core.plugin.AbstractContentProvider;
 
 /**
- * executes operations on an object graph
+ * executes operations on an object graph.
  * 
  * @author alexandru.galos
  * 
  */
 public class MailServerContentProvider extends AbstractContentProvider {
 
+	/**
+	 * the name of the server.
+	 */
 	private String mailServer;
 
+	/**
+	 * user name.
+	 */
 	private String userName;
 
+	/**
+	 * password.
+	 */
 	private String passWord;
 
+	/**
+	 * connection flag true or false.
+	 */
 	private String sslConnection;
 
+	/**
+	 * the ssl port.
+	 */
 	private String sslPort;
 
+	/**
+	 * the port of the mail server.
+	 */
 	private String port;
 	
+	/**
+	 * flag if the synchronization is cached or not (true or false).
+	 */
 	private String cache;
 
+	/**
+	 * the key attributes list.
+	 */
 	private Collection<String> keyAttributesList;
 
+	/**
+	 * the mail server folders.
+	 */
 	private Collection<String> folderAttributes;
 
+	/**
+	 * the new attributes for the imap content provider.
+	 */
 	private Map<String, String> attributeMappings = new HashMap<String, String>();
 
+	/**
+	 * the last time the synchronization was performed.
+	 */
 	private static long time = new Date(0).getTime();
 
 	/**
@@ -67,19 +100,18 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			.getLogger(MailServerContentProvider.class);
 
 	/**
-	 * get the binary information from a content mail
+	 * get the binary information from a content mail.
 	 * 
 	 * @param content
 	 *            - the content that corresponds to an email from the mail
 	 *            server
-	 */
-
-	/*
-	 * identify the message from the content url get the input stream of the
-	 * mail transform the input stream in bytes
+	 *  @return the binary information of the content
 	 */
 	public byte[] getBinaryData(Content content) {
-
+		/*
+		 * identify the message from the content url get the input stream of the
+		 * mail transform the input stream in bytes
+		 */
 		logger.info("getBinaryData for content with url:"
 				+ content.getContentUrl());
 		MailServerUtils msu = new MailServerUtils();
@@ -120,6 +152,9 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		return byteArray;
 	}
 
+	/**
+	 * nothing to do.
+	 */
 	@Override
 	public void destroy() {
 		// TODO Auto-generated method stub
@@ -127,7 +162,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * corresponding action to {@link MailServerContentProvider} is "delete"
+	 * corresponding action to {@link MailServerContentProvider} is "delete".
 	 * 
 	 * @param content
 	 *            - the content from object graph
@@ -142,6 +177,11 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		return Arrays.asList(actions);
 	}
 
+	/**
+	 * get the content from a specified url.
+	 * @param contentURL   the url of the content
+	 * @return content    the new content that is created
+	 */
 	@Override
 	public Content getContent(String contentURL) {
 
@@ -179,9 +219,10 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * creates an instance to {@link MailContentCreator}
+	 * creates an instance to {@link MailContentCreator}.
 	 * 
-	 * @return
+	 * @return an object representing that can perform operations
+	 *                  on the object graph and on the mail server
 	 */
 	private MailContentCreator getMailContentCreator() {
 
@@ -201,6 +242,12 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		return mc;
 	}
 
+	/**
+	 * create a content from an inputstream.
+	 * @param inputstream    the input stream from which the 
+	 *                        content object is created
+	 * @return the content that is created from the input stream.
+	 */
 	@Override
 	public Content getContent(InputStream inputstream) {
 
@@ -213,11 +260,18 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		return content;
 	}
 
+	/**
+	 * nothing to do.
+	 * @return null
+	 */
 	@Override
 	public Collection getContentUrls() {
 		return null;
 	}
 
+	/**
+	 * initialize the content parameters.
+	 */
 	@Override
 	public void init() {
 		logger.info("initialize parameters...");
@@ -264,12 +318,13 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * extract key attributes from the configuration file plugin.xml
+	 * extract key attributes from the configuration file plugin.xml.
 	 * 
 	 * @param keyAttributes
 	 *            - the string with the specified attributes
-	 * @param regex
-	 * @return
+	 * @param regex    the regular expression that is used for extracting the 
+	 *                  parameters
+	 * @return a collection of string representing the extracted parameters
 	 */
 	private Collection<String> extractParameters(String keyAttributes,
 			String regex) {
@@ -288,6 +343,10 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			return new ArrayList<String>();
 	}
 
+	/**
+	 * nothing to do.
+	 * @param event   the event that is raised
+	 */
 	@Override
 	public void onChangeEvent(Event event) {
 		// TODO Auto-generated method stub
@@ -296,10 +355,12 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * perform the operations returned by {@value getActions(content)} on a
-	 * content
+	 * content.
 	 * 
 	 * @param action
 	 *            - the action to be performed
+	 * @param content  
+	 *            - the content on which the operation is performed
 	 */
 	@Override
 	public void performAction(String action, Content content) {
@@ -318,10 +379,12 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * perform delete operation on a certain content
+	 * perform delete operation on a certain content.
 	 * 
-	 * @param content
-	 * @param mailContentCreator
+	 * @param content the content on which the delete operation is performed
+	 * @param mailContentCreator   the object that performs the operations
+	 *                             on the object graph and also on the
+	 *                             mail server
 	 */
 	private void performDeleteAction(Content content,
 			MailContentCreator mailContentCreator) {
@@ -352,7 +415,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * synchronize the object graph with the mail server if there are more mails
-	 * on the server we need to add them to the object graph
+	 * on the server we need to add them to the object graph.
 	 */
 	@Override
 	/*
@@ -392,7 +455,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * delete the contents from the object graphs if there are not in the email
-	 * server
+	 * server.
 	 */
 	@Override
 	/*
@@ -424,10 +487,18 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		}
 	}
 
+	/**
+	 * set the cache flag for the synchronization.
+	 * @param cache   the flag that specified if the synchronization is flaged or not
+	 */
 	public void setCache(String cache) {
 		this.cache = cache;
 	}
 
+	/**
+	 * gets the cache flag.
+	 * @return the cache
+	 */
 	public String getCache() {
 		return cache;
 	}

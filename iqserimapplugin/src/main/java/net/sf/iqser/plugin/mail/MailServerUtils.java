@@ -15,27 +15,58 @@ import org.apache.log4j.Logger;
 import com.iqser.core.exception.IQserRuntimeException;
 
 /**
- * connection and query of the mail server
+ * connection and query of the mail server.
+ * 
  * @author alexandru.galos
- *
+ * 
  */
 public class MailServerUtils {
 
+	/**
+	 * the name of the mail server.
+	 */
 	private String mailServer;
+
+	/**
+	 * the name of the user.
+	 */
 	private String userName;
+
+	/**
+	 * the password.
+	 */
 	private String passWord;
+
+	/**
+	 * the ssl port.
+	 */
 	private String sslPort;
 
+	/**
+	 * the store.
+	 */
 	private Store store;
+
+	/**
+	 * the port.
+	 */
 	private int port;
+
+	/**
+	 * logger.
+	 */
 	private static Logger logger = Logger.getLogger(MailServerUtils.class);
 
 	/**
-	 * identify a mail using the id from a specified folder
-	 * @param folder - the folder from where the message is queried
-	 * @param mailID - the mail id
+	 * identify a mail using the id from a specified folder.
+	 * 
+	 * @param folder
+	 *            - the folder from where the message is queried
+	 * @param mailID
+	 *            - the mail id
 	 * @return - the mail message
 	 * @throws MessagingException
+	 *             exception that may appear when the message is created
 	 */
 	public Message identifyMessage(Folder folder, String mailID)
 			throws MessagingException {
@@ -50,16 +81,19 @@ public class MailServerUtils {
 
 		if (messages.length == 0) {
 			logger.fatal("no messages with specified id identified");
-			throw new IQserRuntimeException("no messages with specified id identified");
+			throw new IQserRuntimeException(
+					"no messages with specified id identified");
 		} else
 			return messages[0];
 	}
 
 	/**
-	 * attempt to establish a secured or non-secured connection
-	 * between a client and the mail server---the connection is performed 3 times
-	 * @param sslConnection - flag (string) for checking if the connection
-	 * is secured of not
+	 * attempt to establish a secured or non-secured connection. between a
+	 * client and the mail server---the connection is performed 3 times.
+	 * 
+	 * @param sslConnection
+	 *            - flag (string which is true or false) for checking if the
+	 *            connection is secured of not
 	 * @return - return a store of the mail server
 	 */
 	public Store attemptConnectionMailServer(String sslConnection) {
@@ -95,9 +129,11 @@ public class MailServerUtils {
 	}
 
 	/**
-	 * establish 1 connection the mail server without error detection and 
-	 * retrial
-	 * @param sslConnection - the type of the connection (secured or not)
+	 * establish 1 connection the mail server without error detection and
+	 * re-trial.
+	 * 
+	 * @param sslConnection
+	 *            - the type of the connection (secured or not)
 	 * @return - return a store of the mail server
 	 */
 	private Store connectMailServer(String sslConnection) {
@@ -116,8 +152,8 @@ public class MailServerUtils {
 			Session session = Session.getDefaultInstance(props);
 			store = session.getStore("imap");
 
-			if (port!=0)
-				store.connect(mailServer,port, userName, passWord);
+			if (port != 0)
+				store.connect(mailServer, port, userName, passWord);
 			else
 				store.connect(mailServer, userName, passWord);
 
@@ -129,44 +165,97 @@ public class MailServerUtils {
 		return store;
 	}
 
-	
-
+	/**
+	 * gets the name of the server.
+	 * 
+	 * @return the name of the server
+	 */
 	public String getMailServer() {
 		return mailServer;
 	}
 
+	/**
+	 * sets the name of the server.
+	 * 
+	 * @param mailServer
+	 *            the name of the server
+	 */
 	public void setMailServer(String mailServer) {
 		this.mailServer = mailServer;
 	}
 
+	/**
+	 * gets the user name.
+	 * 
+	 * @return the user name
+	 */
 	public String getUserName() {
 		return userName;
 	}
 
+	/**
+	 * sets the username of the server.
+	 * 
+	 * @param userName
+	 *            the name of the user of the server
+	 */
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
 
+	/**
+	 * gets the password.
+	 * 
+	 * @return the password of the user of the server
+	 */
 	public String getPassWord() {
 		return passWord;
 	}
 
+	/**
+	 * sets the password.
+	 * 
+	 * @param passWord
+	 *            the password that can be used on the server
+	 */
 	public void setPassWord(String passWord) {
 		this.passWord = passWord;
 	}
 
+	/**
+	 * sets the secured port.
+	 * 
+	 * @param sslPort
+	 *            the secured port (993)
+	 */
 	public void setSslPort(String sslPort) {
 		this.sslPort = sslPort;
 	}
 
+	/**
+	 * gets the secured port (993).
+	 * 
+	 * @return the secured port (993)
+	 */
 	public String getSslPort() {
 		return sslPort;
 	}
 
+	/**
+	 * sets the default port (143 for imap).
+	 * 
+	 * @param port
+	 *            the port for imap (default 143)
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/**
+	 * gets the port (default 143).
+	 * 
+	 * @return the port (default 143)
+	 */
 	public int getPort() {
 		return port;
 	}

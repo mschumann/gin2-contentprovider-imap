@@ -38,22 +38,61 @@ import com.iqser.core.model.Attribute;
 import com.iqser.core.model.Content;
 
 /**
- * creates mail content from mails
+ * creates mail content from mails.
  * 
  * @author alexandru.galos
  * 
  */
 public class MailContentCreator {
 
+	/**
+	 * the mail server name.
+	 */
 	private String mailServer;
+
+	/**
+	 * the user name.
+	 */
 	private String userName;
+
+	/**
+	 * the password.
+	 */
 	private String passWord;
+
+	/**
+	 * flag for secured connection.
+	 */
 	private String sslConnection;
+
+	/**
+	 * the specified folders.
+	 */
 	private Collection<String> folders;
+
+	/**
+	 * mail server utils object.
+	 */
 	private MailServerUtils msu = new MailServerUtils();;
+
+	/**
+	 * the ssl port (default 993).
+	 */
 	private String sslPort;
+
+	/**
+	 * the listening port (default for imap 143).
+	 */
 	private int port;
+
+	/**
+	 * flag for cache operations.
+	 */
 	private String cache;
+
+	/**
+	 * the attribute mappings.
+	 */
 	private Map<String, String> attributeMap;
 	/**
 	 * Default Logger for this class.
@@ -61,7 +100,7 @@ public class MailContentCreator {
 	private static Logger logger = Logger.getLogger(MailContentCreator.class);
 
 	/**
-	 * create content from email (email-content and attachment content)
+	 * create content from email (email-content and attachment content).
 	 * 
 	 * @param contentURL
 	 *            - the message-id
@@ -160,7 +199,7 @@ public class MailContentCreator {
 
 	/**
 	 * create content from email (email-content and attachment content) from
-	 * input stream
+	 * input stream.
 	 * 
 	 * @param inputStream
 	 *            - the input stream of the mail that contains also the header
@@ -191,10 +230,12 @@ public class MailContentCreator {
 
 	/**
 	 * assert provider to mail content and attachment content updates attributes
-	 * to the content
+	 * to the content.
 	 * 
 	 * @param providerID
+	 *            the provider id of the content provider
 	 * @param mailContent
+	 *            the mail content that needs to be set
 	 */
 	private void assertProviderIDToContent(String providerID,
 			MailContent mailContent) {
@@ -212,40 +253,84 @@ public class MailContentCreator {
 		}
 	}
 
+	/**
+	 * gets the mail server name.
+	 * 
+	 * @return the mail server name
+	 */
 	public String getMailServer() {
 		return mailServer;
 	}
 
+	/**
+	 * sets the mail server name.
+	 * 
+	 * @param mailServer
+	 *            the name of the server
+	 */
 	public void setMailServer(String mailServer) {
 		this.mailServer = mailServer;
 	}
 
+	/**
+	 * gets the user name.
+	 * 
+	 * @return the name of the user
+	 */
 	public String getUserName() {
 		return userName;
 	}
 
+	/**
+	 * sets the user name.
+	 * 
+	 * @param userName
+	 *            the name of the user
+	 */
 	public void setUserName(String userName) {
 		this.userName = userName;
 	}
 
+	/**
+	 * gets the password.
+	 * 
+	 * @return the password
+	 */
 	public String getPassWord() {
 		return passWord;
 	}
 
+	/**
+	 * sets the password.
+	 * 
+	 * @param passWord
+	 *            a password specific for a user and a mail server
+	 */
 	public void setPassWord(String passWord) {
 		this.passWord = passWord;
 	}
 
+	/**
+	 * gets the ssl connection flag.
+	 * 
+	 * @return the ssl connection flag
+	 */
 	public String getSslConnection() {
 		return sslConnection;
 	}
 
+	/**
+	 * sets the ssl connection flag.
+	 * 
+	 * @param sslConnection
+	 *            the ssl connection flag
+	 */
 	public void setSslConnection(String sslConnection) {
 		this.sslConnection = sslConnection;
 	}
 
 	/**
-	 * create a mail content from a message
+	 * create a mail content from a message.
 	 * 
 	 * @param message
 	 *            - the mail message
@@ -338,7 +423,7 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * used for extracting multi part messages
+	 * used for extracting multi part messages.
 	 * 
 	 * @param content
 	 *            - the content that is created in the object graph
@@ -348,8 +433,11 @@ public class MailContentCreator {
 	 *            - the index of the part in a multi-part message
 	 * @return - return the mail content without its attachments
 	 * @throws MessagingException
+	 *             exception for creating the message
 	 * @throws IOException
+	 *             for extracting the attachments
 	 * @throws FileParserException
+	 *             for parsing the attachments
 	 */
 	private Collection<Content> extractPartMessage(Content content,
 			Object messageContent, int index) throws MessagingException,
@@ -410,13 +498,15 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * create an attachment content from an input stream
+	 * create an attachment content from an input stream.
 	 * 
 	 * @param inputStream
 	 *            - the input stream of the message body
 	 * @return an attachment content
 	 * @throws FileParserException
+	 *             exception for parsing the attachments
 	 * @throws IOException
+	 *             exception for read attachments
 	 */
 	private Content createAttachmentContent(InputStream inputStream)
 			throws FileParserException, IOException {
@@ -436,11 +526,15 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * create address attributes for content
+	 * create address attributes for content.
 	 * 
 	 * @param content
+	 *            that is updated
 	 * @param addresses
+	 *            the addresses of the mail
 	 * @param type
+	 *            the type of the address (sender or recipients or
+	 *            bcc_recipients or cc_recipients)
 	 */
 	private void extractHeaderAddresses(Content content, Address[] addresses,
 			String type) {
@@ -468,10 +562,10 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * get the name of the sender from the email address
+	 * get the name of the sender from the email address.
 	 * 
 	 * @param addressValue
-	 * @return
+	 * @return the name from an email address
 	 */
 	private String getName(String addressValue) {
 
@@ -485,12 +579,12 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * creates an attribute for a content
+	 * creates an attribute for a content.
 	 * 
-	 * @param name
-	 * @param value
-	 * @param key
-	 * @return the attribute
+	 * @param name the name of the attribute
+	 * @param value the value of the attribute
+	 * @param key the key of the attribute
+	 * @return the attribute  the created attribute
 	 */
 	private Attribute createAttribute(String name, String value, boolean key) {
 		Attribute attribute = new Attribute();
@@ -502,8 +596,9 @@ public class MailContentCreator {
 
 	/**
 	 * get the message ids from the mail server from each folder that is
-	 * specified in the configuration file
+	 * specified in the configuration file.
 	 * 
+	 * @param sinceTime   a timestamp from the last synchronization
 	 * @return the collection of message-ids (collection of string)
 	 */
 	public Collection getMailServerURLs(long sinceTime) {
@@ -532,7 +627,7 @@ public class MailContentCreator {
 				logger.info(folder.getName() + " " + folder.getMessageCount());
 				if (getCache().equalsIgnoreCase("true"))
 					messages = folder.search(newer);
-				else 
+				else
 					messages = folder.getMessages();
 				for (Message message : messages) {
 
@@ -557,7 +652,7 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * deletes a mail from the server
+	 * deletes a mail from the server.
 	 * 
 	 * @param mailURL
 	 *            - the message-id
@@ -588,33 +683,58 @@ public class MailContentCreator {
 
 	}
 
+	
+	/**
+	 * sets the folders that are scanned.
+	 * @param folders the server folders
+	 */
 	public void setFolders(Collection<String> folders) {
 		this.folders = folders;
 	}
 
+	/**
+	 * gets the folders that are scanned.
+	 * @return the folders that are scanned
+	 */
 	public Collection<String> getFolders() {
 		return folders;
 	}
 
+	/**
+	 * sets the ssl port.
+	 * @param sslPort the ssl port (default 993)
+	 */
 	public void setSslPort(String sslPort) {
 		this.sslPort = sslPort;
 	}
 
+	/**
+	 * gets the ssl port.
+	 * @return the ssl port (default 993) 
+	 */
 	public String getSslPort() {
 		return sslPort;
 	}
 
+	/**
+	 * sets the attribute map.
+	 * @param attributeMap a map with the new attribute names
+	 */
 	public void setAttributeMap(Map<String, String> attributeMap) {
 		this.attributeMap = attributeMap;
 	}
 
+	/**
+	 * gets the attribute map.
+	 * @return a map with the new attribute names
+	 */
 	public Map<String, String> getAttributeMap() {
 		return attributeMap;
 	}
 
 	/**
 	 * updates the key attributes of a content graph the attributes that are not
-	 * in {@link keyAttributeList} are set as non-key attributes
+	 * in {@link keyAttributeList} are set as non-key attributes.
 	 * 
 	 * @param content
 	 *            - the mail content
@@ -646,7 +766,7 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * updates the attributes according to the configuration plugin.xml
+	 * updates the attributes according to the configuration plugin.xml.
 	 * 
 	 * @param content
 	 *            a mail or attachment content
@@ -669,18 +789,34 @@ public class MailContentCreator {
 
 	}
 
+	/**
+	 * sets the server port (default 143).
+	 * @param port the server port (default 143)
+	 */
 	public void setPort(int port) {
 		this.port = port;
 	}
 
+	/**
+	 * gets the server port (default 143).
+	 * @return port of the server (default 143)
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * sets the cache flag. 
+	 * @param cache flag for synchronization
+	 */
 	public void setCache(String cache) {
 		this.cache = cache;
 	}
 
+	/**
+	 * gets the cache flag.
+	 * @return the flag of the cache
+	 */
 	public String getCache() {
 		return cache;
 	}
