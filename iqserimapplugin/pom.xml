@@ -419,10 +419,36 @@
 			<type>jar</type>
 			<optional>false</optional>
 		</dependency>
-	</dependencies>
-
-	<modules>
-		<module>email-provider</module>
-	</modules>
+		
+		<dependency>
+			<groupId>net.sf.iqser.plugin.file</groupId>
+			<artifactId>file-parser</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20080701</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
+			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		
+		<!-- testing -->
+		<dependency>
+			<groupId>org.jvnet.mock-javamail</groupId>
+			<artifactId>mock-javamail</artifactId>
+			<version>1.7</version>
+			<type>jar</type>
+			<scope>test</scope>
+		</dependency>		
+	</dependencies>	
 
 </project>
