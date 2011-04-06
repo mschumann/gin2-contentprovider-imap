@@ -346,7 +346,7 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<scp file="${sourceforge.artifact}" todir="${sourceforge.upload}"
+								<scp todir="${sourceforge.upload}"
 									password="${sf.password}" trust="true">
 									<fileset dir="${project.build.directory}">
 										<include name="${project.build.finalName}*.jar" />
