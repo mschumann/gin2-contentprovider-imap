@@ -9,7 +9,8 @@
 	<packaging>jar</packaging>
 
 	<name>IMAP Content Provider plugin for iQser GIN</name>
-	<description>A ContentProvider plugin to connect IMAP Mailservers to iQser GIN Platform.</description>
+	<description>A ContentProvider plugin to connect IMAP Mailservers to
+		iQser GIN Platform.</description>
 	<url>http://iqserimapplugin.sourceforge.net</url>
 
 	<licenses>
@@ -97,6 +98,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<iqser.version>1.2.2.1</iqser.version>
 		<compileSource>1.5</compileSource>
+		<sourceforge.artifact>${project.build.directory}/${project.build.finalName}</sourceforge.artifact>
+		<sourceforge.upload>${sf.username},iqserimapplugin@frs.sourceforge.net:/home/pfs/project/i/iq/iqserimapplugin</sourceforge.upload>
 	</properties>
 
 	<repositories>
@@ -321,6 +324,40 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>ant</groupId>
+						<artifactId>ant-jsch</artifactId>
+						<version>1.6.5</version>
+					</dependency>
+					<dependency>
+						<groupId>jsch</groupId>
+						<artifactId>jsch</artifactId>
+						<version>0.1.25</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>publish_jar</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<scp file="${sourceforge.artifact}" todir="${sourceforge.upload}"
+									password="${sf.password}" trust="true">
+									<fileset dir="${project.build.directory}">
+										<include name="${project.build.finalName}*.jar" />
+									</fileset>
+								</scp>
+							</tasks>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>2.1.1</version>
@@ -417,7 +454,7 @@
 			<type>jar</type>
 			<optional>false</optional>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>net.sf.iqser.plugin.file</groupId>
 			<artifactId>file-parser</artifactId>
@@ -439,7 +476,7 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<!-- testing -->
 		<dependency>
 			<groupId>org.jvnet.mock-javamail</groupId>
@@ -447,7 +484,7 @@
 			<version>1.7</version>
 			<type>jar</type>
 			<scope>test</scope>
-		</dependency>		
-	</dependencies>	
+		</dependency>
+	</dependencies>
 
 </project>
