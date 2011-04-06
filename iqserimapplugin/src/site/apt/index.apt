@@ -1,0 +1,12 @@
+ -----
+ IMAP Content Provider plugin for iQser GIN Platform
+ -----
+
+Introduction
+ 
+ The intention of this project is to provide Content Provider plugins for IMAP Mailsystems for the iQser GIN Platform.
+
+ The iQser GIN (Global Information Network) Platform is an enterprise class, highly scalable semantic middleware, whose features incorporate data integration, analysis, process control and information retrieval including the semantic search.
+
+ The iQser GIN Platform is designed as an intermediate layer (semantic layer) between data sources (content providers) and applications (consumers). The semantic layer comprises the iQser core and several light-weight frameworks that allow the iQser GIN Platform to be integrated seamlessly into the existing IT infrastructure and adapted to the organization's own requirements. {{{http://www.iqser.com/}Learn more}}...
+
