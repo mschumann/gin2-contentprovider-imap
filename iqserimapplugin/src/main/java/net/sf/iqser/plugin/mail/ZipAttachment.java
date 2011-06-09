@@ -12,6 +12,7 @@ import java.util.zip.ZipInputStream;
 import net.sf.iqser.plugin.file.parser.FileParser;
 import net.sf.iqser.plugin.file.parser.FileParserException;
 import net.sf.iqser.plugin.file.parser.FileParserFactory;
+import net.sf.iqser.plugin.mail.content.Utils;
 
 import com.iqser.core.model.Attribute;
 import com.iqser.core.model.Content;
@@ -73,8 +74,7 @@ public class ZipAttachment {
 					if (parser != null) {
 
 						String contentURL = "zip://" + url + "!/" + urlZipEntry;
-						content = parser.getContent(null,
-								new ByteArrayInputStream(byteArray));
+						content = Utils.parseFileContent(urlZipEntry, parser, byteArray);
 
 						content.setContentUrl(contentURL);
 						contents.add(content);
@@ -82,12 +82,14 @@ public class ZipAttachment {
 						attribute.setKey(false);
 						attribute.setName("ATTACHED_TO");
 						attribute.setValue(content.getContentUrl());
+						attribute.setType(Attribute.ATTRIBUTE_TYPE_TEXT);
 						content.addAttribute(attribute);
 
 						attribute = new Attribute();
 						attribute.setKey(true);
 						attribute.setName("MESSAGE_ATTACHMENTS_NAME_" + index);
 						attribute.setValue(contentURL);
+						attribute.setType(Attribute.ATTRIBUTE_TYPE_TEXT);
 
 						content.addAttribute(attribute);
 

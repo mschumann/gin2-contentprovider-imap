@@ -4,7 +4,6 @@ import com.iqser.core.analyzer.AnalyzerTaskStarter;
 import com.iqser.core.analyzer.ContentAnalyzer;
 import com.iqser.core.category.CategoryBuilder;
 import com.iqser.core.category.CategoryManager;
-import com.iqser.core.client.AdminFacade;
 import com.iqser.core.client.ClientFacade;
 import com.iqser.core.event.EventPublisher;
 import com.iqser.core.index.Index;
@@ -12,7 +11,6 @@ import com.iqser.core.locator.ServiceLocator;
 import com.iqser.core.plugin.ContentProvider;
 import com.iqser.core.plugin.PluginManager;
 import com.iqser.core.repository.Repository;
-import com.iqser.core.security.SecurityManager;
 import com.iqser.core.tracker.Tracker;
 
 /**
@@ -29,12 +27,7 @@ public class TestServiceLocator implements ServiceLocator {
 	private Repository rep = null;
 
 	/** AnalyzerTaskStarter mpckup for testing */
-	private AnalyzerTaskStarter ats = null;
-
-	public AdminFacade getAdminFacade() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	private AnalyzerTaskStarter ats = null;	
 
 	public void setAnalyzerTaskStarter(AnalyzerTaskStarter arg0) {
 		ats = arg0;

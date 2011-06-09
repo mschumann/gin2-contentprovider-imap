@@ -144,10 +144,7 @@ public class MailContentCreator {
 				content = mailContent.getContent();
 
 				if (content.getAttributeByName("MESSAGE_FOLDER") == null) {
-					Attribute attributeM = new Attribute();
-					attributeM.setName("MESSAGE_FOLDER");
-					attributeM.setValue(folderN);
-					attributeM.setKey(false);
+					Attribute attributeM = new Attribute("MESSAGE_FOLDER", folderN, Attribute.ATTRIBUTE_TYPE_TEXT, false);
 					content.addAttribute(attributeM);
 				}
 
@@ -168,6 +165,9 @@ public class MailContentCreator {
 				.getAttachmentContents();
 		updateKeyAttachmentAttributes(attachmentContents, keyAttributesList);
 
+		//add owner for security filter
+		addOwner(mailContent);
+		
 		return mailContent;
 	}
 
@@ -194,6 +194,15 @@ public class MailContentCreator {
 
 		for (Content content : attachmentContents) {
 			updateAttributes(content, mappingAttributes);
+		}
+	}
+	
+	private void addOwner(MailContent mailContent){
+		//set owner for security filter
+		Content content = mailContent.getContent();
+		content.addAttribute(new Attribute("owner", userName, Attribute.ATTRIBUTE_TYPE_TEXT, false));
+		for (Content attContent : mailContent.getAttachmentContents()) {
+			attContent.addAttribute(new Attribute("owner", userName, Attribute.ATTRIBUTE_TYPE_TEXT, false));
 		}
 	}
 
@@ -225,6 +234,9 @@ public class MailContentCreator {
 		assertProviderIDToContent(providerID, mailContent);
 		updateKeyAttributes(mailContent.getContent(), keyAttributesList);
 
+		//add owner for security filter
+		addOwner(mailContent);
+		
 		return mailContent;
 	}
 
@@ -386,7 +398,7 @@ public class MailContentCreator {
 			assert messageContent != null;
 
 			if (messageContent instanceof Part) {
-				extractPartMessage(content, messageContent, 0);
+				extractPartMessage(content, (Part)messageContent, 0);
 			} else if (messageContent instanceof Multipart) {
 				int count = ((Multipart) messageContent).getCount();
 				int index = 0;
@@ -440,24 +452,24 @@ public class MailContentCreator {
 	 *             for parsing the attachments
 	 */
 	private Collection<Content> extractPartMessage(Content content,
-			Object messageContent, int index) throws MessagingException,
+			Part messageContent, int index) throws MessagingException,
 			IOException, FileParserException {
 
 		Attribute attributeM;
 		Collection<Content> attachmentContents = new ArrayList<Content>();
-		String fileName = ((Part) messageContent).getFileName();
+		String fileName = messageContent.getFileName();
 
 		if (fileName == null) {
 
 			attributeM = createAttribute("MESSAGE_CONTENT_" + index,
-					((Part) messageContent).getContent().toString(), false);
+					messageContent.getContent().toString(), false);
 			content.setFulltext(((Part) messageContent).getContent().toString());
 
 			// does not have an attachment content
 			return null;
-		} else {
-
-			InputStream inputStream = ((Part) messageContent).getInputStream();
+		} else { 
+			
+			InputStream inputStream = messageContent.getInputStream();
 
 			if (fileName.endsWith(".zip")) {
 
@@ -466,15 +478,11 @@ public class MailContentCreator {
 				return zipAttachments;
 
 			} else {
-				Content attachmentContent = createAttachmentContent(inputStream);// fscp.getContent(inputStream);
+				Content attachmentContent = createAttachmentContent(fileName, inputStream);// fscp.getContent(inputStream);
 				if (attachmentContent != null) {
-					attachmentContent.setContentUrl(content.getContentUrl()
-							+ fileName);
+					attachmentContent.setContentUrl(content.getContentUrl() + fileName);
 
-					Attribute attribute = new Attribute();
-					attribute.setKey(false);
-					attribute.setName("ATTACHED_TO");
-					attribute.setValue(content.getContentUrl());
+					Attribute attribute = createAttribute("ATTACHED_TO", content.getContentUrl(), true);
 					attachmentContent.addAttribute(attribute);
 
 					attributeM = createAttribute("MESSAGE_ATTACHMENTS_NAME_"
@@ -508,7 +516,7 @@ public class MailContentCreator {
 	 * @throws IOException
 	 *             exception for read attachments
 	 */
-	private Content createAttachmentContent(InputStream inputStream)
+	private Content createAttachmentContent(String fileName, InputStream inputStream)
 			throws FileParserException, IOException {
 
 		byte[] byteArray = IOUtils.toByteArray(inputStream);
@@ -517,13 +525,12 @@ public class MailContentCreator {
 				.getFileParser(new ByteArrayInputStream(byteArray));
 
 		if (parser != null) {
-			Content content = parser.getContent(null, new ByteArrayInputStream(
-					byteArray));
-			return content;
+			return Utils.parseFileContent(fileName, parser, byteArray);
 		}
 
 		return null;
-	}
+	}	
+	
 
 	/**
 	 * create address attributes for content.
@@ -591,6 +598,7 @@ public class MailContentCreator {
 		attribute.setKey(key);
 		attribute.setName(name);
 		attribute.setValue(value);
+		attribute.setType(Attribute.ATTRIBUTE_TYPE_TEXT);
 		return attribute;
 	}
 

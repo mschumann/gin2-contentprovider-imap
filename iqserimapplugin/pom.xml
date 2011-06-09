@@ -96,7 +96,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<iqser.version>1.2.2.1</iqser.version>
+		<iqser.version>1.4</iqser.version>
 		<compileSource>1.5</compileSource>
 		<sourceforge.artifact>${project.build.directory}/${project.build.finalName}</sourceforge.artifact>
 		<sourceforge.upload>${sf.username},iqserimapplugin@frs.sourceforge.net:/home/pfs/project/i/iq/iqserimapplugin</sourceforge.upload>
