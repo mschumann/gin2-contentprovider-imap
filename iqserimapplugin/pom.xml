@@ -259,13 +259,13 @@
 				<version>2.4</version>
 				<configuration>
 					<check>
-						<branchRate>80</branchRate>
-						<lineRate>80</lineRate>
+						<branchRate>75</branchRate>
+						<lineRate>70</lineRate>
 						<haltOnFailure>false</haltOnFailure>
-						<totalBranchRate>80</totalBranchRate>
-						<totalLineRate>80</totalLineRate>
-						<packageLineRate>80</packageLineRate>
-						<packageBranchRate>80</packageBranchRate>
+						<totalBranchRate>75</totalBranchRate>
+						<totalLineRate>70</totalLineRate>
+						<packageLineRate>70</packageLineRate>
+						<packageBranchRate>75</packageBranchRate>
 					</check>
 					<instrumentation>
 						<excludes>
@@ -411,7 +411,7 @@
 				<artifactId>maven-checkstyle-plugin</artifactId>
 				<version>2.3</version>
 				<configuration>
-					<configLocation>checkstyle.xml</configLocation>
+					<configLocation>checkstyle/checkstyle.xml</configLocation>
 				</configuration>
 			</plugin>
 		</plugins>
