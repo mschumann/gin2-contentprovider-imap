@@ -96,24 +96,24 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<iqser.version>1.4</iqser.version>
+		<iqser.version>1.5</iqser.version>
 		<compileSource>1.5</compileSource>
 		<sourceforge.artifact>${project.build.directory}/${project.build.finalName}</sourceforge.artifact>
 		<sourceforge.upload>${sf.username},iqserimapplugin@frs.sourceforge.net:/home/pfs/project/i/iq/iqserimapplugin</sourceforge.upload>
 	</properties>
 
 	<repositories>
-		<repository>
-			<id>iqser_release</id>
+		 <repository>
+  			<id>iqser_release</id>
 			<name>Artifactory Mirror</name>
-			<url>http://repo.iqser.com/artifactory/repo</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
+  			<url>http://nexus.iqser.com/nexus/content/groups/repo</url>
+  			<releases>
+   				<enabled>true</enabled>
+  			</releases>
 			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
+   				<enabled>true</enabled>
+  			</snapshots>
+ 		</repository>
 		<repository>
 			<id>iqserfileplugin-repo</id>
 			<name>iQser File Plugin Repository</name>
@@ -137,18 +137,18 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
+	
 	<pluginRepositories>
-		<pluginRepository>
-			<id>iqser_release</id>
-			<url>http://repo.iqser.com/artifactory/repo</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
+ 		<pluginRepository>
+  			<id>iqser_release</id>
+  			<url>http://nexus.iqser.com/nexus/content/groups/repo</url>
+  			<releases>
+   				<enabled>true</enabled>
+  			</releases>
+  			<snapshots>
+   				<enabled>true</enabled>
+  			</snapshots>
+ 		</pluginRepository>
 	</pluginRepositories>
 
 	<!-- TODO: Change to Maven Central Repository -->

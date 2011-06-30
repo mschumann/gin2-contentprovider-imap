@@ -35,6 +35,7 @@ import javax.mail.internet.MimeMultipart;
 import junit.framework.TestCase;
 import net.sf.iqser.plugin.mail.content.MailContentCreator;
 import net.sf.iqser.plugin.mail.test.MockAnalyzerTaskStarter;
+import net.sf.iqser.plugin.mail.test.MockContentProviderFacade;
 import net.sf.iqser.plugin.mail.test.MockRepository;
 import net.sf.iqser.plugin.mail.test.TestServiceLocator;
 
@@ -119,6 +120,10 @@ public class MailServerContentProviderTest extends TestCase {
 		sl.setRepository(rep);
 		sl.setAnalyzerTaskStarter(new MockAnalyzerTaskStarter());
 
+		MockContentProviderFacade cpFacade = new MockContentProviderFacade();
+		cpFacade.setRepo(rep);
+		sl.setFacade(cpFacade);
+		
 		mockMailsIds = testCreateMockMails();
 
 		Folder folder = connectMockupServer("false");

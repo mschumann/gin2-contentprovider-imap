@@ -402,4 +402,11 @@ public class MockRepository implements Repository {
 		return null;
 	}
 
+
+	public Collection<Concept> getRelatedConceptsByConcept(Concept arg0)
+			throws IQserTechnicalException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

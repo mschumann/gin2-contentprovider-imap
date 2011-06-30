@@ -9,6 +9,7 @@ import com.iqser.core.event.EventPublisher;
 import com.iqser.core.index.Index;
 import com.iqser.core.locator.ServiceLocator;
 import com.iqser.core.plugin.ContentProvider;
+import com.iqser.core.plugin.ContentProviderFacade;
 import com.iqser.core.plugin.PluginManager;
 import com.iqser.core.repository.Repository;
 import com.iqser.core.tracker.Tracker;
@@ -28,14 +29,22 @@ public class TestServiceLocator implements ServiceLocator {
 
 	/** AnalyzerTaskStarter mpckup for testing */
 	private AnalyzerTaskStarter ats = null;	
-
+	
+	/** ContentProviderFacade for testing */
+	private ContentProviderFacade facade = null;
+	
+	
 	public void setAnalyzerTaskStarter(AnalyzerTaskStarter arg0) {
 		ats = arg0;
 	}
-
+	
 	public AnalyzerTaskStarter getAnalyzerTaskStarter() {
 		return ats;
 	}
+	
+	public void setFacade(ContentProviderFacade facade) {
+		this.facade = facade;
+	}	
 
 	public CategoryBuilder getCategoryBuilder() {
 		// TODO Auto-generated method stub
@@ -92,6 +101,10 @@ public class TestServiceLocator implements ServiceLocator {
 	public Tracker getTracker() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public ContentProviderFacade getContentProviderFacade() {
+		return facade;
 	}
 
 }
