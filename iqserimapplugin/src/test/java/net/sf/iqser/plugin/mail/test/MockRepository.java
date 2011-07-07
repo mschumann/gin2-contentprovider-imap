@@ -36,7 +36,7 @@ public class MockRepository implements Repository {
 	
 	
 	public void addConcept(Concept arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
@@ -61,26 +61,26 @@ public class MockRepository implements Repository {
 
 	
 	public void addContentItem(ContentItem arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void addCooccurrence(Cooccurrence arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void addRelation(Relation arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void close() throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
@@ -103,7 +103,7 @@ public class MockRepository implements Repository {
 
 	
 	public void deleteConcept(Concept arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
@@ -135,21 +135,21 @@ public class MockRepository implements Repository {
 	
 	public void deleteContentItem(ContentItem arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void deleteCooccurrence(Cooccurrence arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void deleteRelation(long arg0, long arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
@@ -163,26 +163,26 @@ public class MockRepository implements Repository {
 
 	
 	public Concept getConcept(String arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public Concept getConcept(long arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public Content getContent(long arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public Content getContent(long arg0, Collection<String> arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
@@ -238,59 +238,59 @@ public class MockRepository implements Repository {
 	
 	public ContentItem getContentItem(long arg0, long arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public Collection getContentTypes() throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public Cooccurrence getCooccurrence(long arg0, long arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public int getDocumentFrequency(Concept arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return 0;
 	}
 
 	
 	public String getDocumentText(long arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public int getMaxDoc() throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return 0;
 	}
 
 	
 	public Collection<SearchResult> getRelatedContent(long arg0, double arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public Relation getRelation(long arg0, long arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public int getRelationCount(long arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return 0;
 	}
 
@@ -301,33 +301,33 @@ public class MockRepository implements Repository {
 
 	
 	public boolean isEmpty() throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return false;
 	}
 
 	
 	public boolean isRelated(long arg0, long arg1)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return false;
 	}
 
 	
 	public void saveContentItems(Collection<ContentItem> arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public Collection search(Filter arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	
 	public void updateConcept(Concept arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
@@ -357,55 +357,55 @@ public class MockRepository implements Repository {
 	
 	public void updateContentItem(ContentItem arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void updateCooccurrence(Cooccurrence arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	
 	public void updateRelation(Relation arg0) throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 
 	public Collection<String> getAttributesByProvider(String arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 
 	public Collection<String> getAttributesByType(String arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 
 	public Collection<Concept> getConcepts(long arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 
 	public Collection<Concept> getRelatedConcepts(long arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 
 	public Collection<Concept> getRelatedConceptsByConcept(Concept arg0)
 			throws IQserTechnicalException {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 

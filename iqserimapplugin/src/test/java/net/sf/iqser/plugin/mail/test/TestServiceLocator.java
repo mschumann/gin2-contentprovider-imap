@@ -47,22 +47,22 @@ public class TestServiceLocator implements ServiceLocator {
 	}	
 
 	public CategoryBuilder getCategoryBuilder() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	public CategoryManager getCategoryManager() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	public ClientFacade getClientFacade() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	public ContentAnalyzer getContentAnalyzer() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}	
 
@@ -71,17 +71,17 @@ public class TestServiceLocator implements ServiceLocator {
 	}
 
 	public EventPublisher getEventPublisher() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	public Index getIndex() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
 	public PluginManager getPluginManager() {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
@@ -93,13 +93,11 @@ public class TestServiceLocator implements ServiceLocator {
 		return rep;
 	}
 
-	public SecurityManager getSecurityManager() {
-		// TODO Auto-generated method stub
+	public SecurityManager getSecurityManager() {		
 		return null;
 	}
 
-	public Tracker getTracker() {
-		// TODO Auto-generated method stub
+	public Tracker getTracker() {		
 		return null;
 	}
 

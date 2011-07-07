@@ -157,8 +157,6 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	 */
 	@Override
 	public void destroy() {
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -349,8 +347,6 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	 */
 	@Override
 	public void onChangeEvent(Event event) {
-		// TODO Auto-generated method stub
-
 	}
 
 	/**
