@@ -437,22 +437,29 @@ public class MailServerContentProvider extends AbstractContentProvider {
 					.getMailServerURLs(time);
 
 			for (String contentURL : contentURLs) {
-				if (!isExistingContent(contentURL)) {
-					MailContent mailContent = mailContentCreator.getContent(
-							contentURL, keyAttributesList, getName());
-					Content content = mailContent.getContent();
-					content.setProvider(getName());
-					addContent(content);
-					Collection<Content> attachmentContents = mailContent
-							.getAttachmentContents();
-					for (Content attachmentContent : attachmentContents) {
-						addContent(attachmentContent);
+				try {
+					if (!isExistingContent(contentURL)) {
+						MailContent mailContent = mailContentCreator
+								.getContent(contentURL, keyAttributesList,
+										getName());
+						Content content = mailContent.getContent();
+						content.setProvider(getName());
+						addContent(content);
+						Collection<Content> attachmentContents = mailContent
+								.getAttachmentContents();
+						for (Content attachmentContent : attachmentContents) {
+							addContent(attachmentContent);
+						}
 					}
+				} catch (Exception e) {
+					logger.error(String.format(
+							"Error while processing message with url %s.",
+							contentURL), e);
 				}
 			}
 			time = nexttime;
-		} catch (IQserException e) {
-			throw new IQserRuntimeException(e);
+		} catch (Throwable t) {
+			throw new IQserRuntimeException(t);
 		}
 	}
 
