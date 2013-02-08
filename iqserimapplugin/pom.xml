@@ -5,7 +5,7 @@
 
 	<groupId>net.sf.iqser.plugin.email</groupId>
 	<artifactId>iqserimapplugin</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>2.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>IMAP Content Provider plugin for iQser GIN</name>
@@ -96,24 +96,24 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<iqser.version>1.5</iqser.version>
-		<compileSource>1.5</compileSource>
+		<iqser.version>2.0.0.36-SNAPSHOT</iqser.version>
+		<compileSource>1.6</compileSource>
 		<sourceforge.artifact>${project.build.directory}/${project.build.finalName}</sourceforge.artifact>
 		<sourceforge.upload>${sf.username},iqserimapplugin@frs.sourceforge.net:/home/pfs/project/i/iq/iqserimapplugin</sourceforge.upload>
 	</properties>
 
 	<repositories>
-		 <repository>
-  			<id>iqser_release</id>
+		<repository>
+			<id>iqser_release</id>
 			<name>Artifactory Mirror</name>
-  			<url>http://nexus.iqser.com/nexus/content/groups/repo</url>
-  			<releases>
-   				<enabled>true</enabled>
-  			</releases>
+			<url>http://nexus.iqser.com/nexus/content/groups/repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 			<snapshots>
-   				<enabled>true</enabled>
-  			</snapshots>
- 		</repository>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
 		<repository>
 			<id>iqserfileplugin-repo</id>
 			<name>iQser File Plugin Repository</name>
@@ -137,18 +137,18 @@
 			</snapshots>
 		</repository>
 	</repositories>
-	
+
 	<pluginRepositories>
- 		<pluginRepository>
-  			<id>iqser_release</id>
-  			<url>http://nexus.iqser.com/nexus/content/groups/repo</url>
-  			<releases>
-   				<enabled>true</enabled>
-  			</releases>
-  			<snapshots>
-   				<enabled>true</enabled>
-  			</snapshots>
- 		</pluginRepository>
+		<pluginRepository>
+			<id>iqser_release</id>
+			<url>http://nexus.iqser.com/nexus/content/groups/repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
 	</pluginRepositories>
 
 	<!-- TODO: Change to Maven Central Repository -->
@@ -180,17 +180,92 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/assembly.xml</descriptor>
+					</descriptors>
+					<appendAssemblyId>false</appendAssemblyId>
+					<attach>false</attach>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy zip to gin</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<copy
+									file="${project.build.directory}/${project.build.finalName}.zip"
+									tofile="${project.build.directory}/${project.build.finalName}.gin" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>prepare_ginplugin.xml</id>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<phase>generate-resources</phase>
+						<configuration>
+							<target>
+								<echo message="Preparing ginplugin.xml" />
+								<copy failonerror="true"
+									file="${basedir}/src/main/assembly/ginplugin.xml" tofile="${basedir}/target/generated-resources/ginplugin.xml" />
+								<replace file="${basedir}/target/generated-resources/ginplugin.xml"
+									token="###PROJECT_VERSION###" value="${project.version}" />
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>prepare archive for deployment</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>${project.build.directory}/${project.build.finalName}.gin</file>
+									<type>gin</type>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
 				<configuration>
 					<fork>true</fork>
-					<source>${compileSource}</source>
-					<target>${compileSource}</target>
+					<source>${java.source.version}</source>
+					<target>${java.target.version}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.9</version>
 				<configuration>
 					<forkMode>always</forkMode>
 					<childDelegation>false</childDelegation>
@@ -201,24 +276,10 @@
 					<excludes>
 						<exclude>**/*TestCase.java</exclude>
 					</excludes>
-					<systemProperties>
-						<property>
-							<name>testdata.dir</name>
-							<value>${basedir}/testdata</value>
-						</property>
-						<property>
-							<name>com.iqser.core.configfile</name>
-							<value>iqser-config.xml</value>
-						</property>
-					</systemProperties>
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-pmd-plugin</artifactId>
-				<configuration>
-					<source>${compileSource}</source>
-					<linkXref>true</linkXref>
-				</configuration>
 				<executions>
 					<execution>
 						<phase>process-sources</phase>
@@ -228,10 +289,16 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<linkXref>true</linkXref>
+					<sourceEncoding>utf-8</sourceEncoding>
+					<minimumTokens>100</minimumTokens>
+					<targetJdk>1.5</targetJdk>
+					<excludes />
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.3</version>
 				<dependencies>
 					<dependency>
 						<groupId>com.iqser</groupId>
@@ -249,28 +316,27 @@
 				</executions>
 				<configuration>
 					<configLocation>checkstyle/checkstyle.xml</configLocation>
-					<failsOnError>false</failsOnError>
-					<linkXref>true</linkXref>
+					<failsOnError>true</failsOnError>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.5</version>
 				<configuration>
 					<check>
-						<branchRate>75</branchRate>
-						<lineRate>70</lineRate>
+						<branchRate>80</branchRate>
+						<lineRate>80</lineRate>
 						<haltOnFailure>false</haltOnFailure>
-						<totalBranchRate>75</totalBranchRate>
-						<totalLineRate>70</totalLineRate>
-						<packageLineRate>70</packageLineRate>
-						<packageBranchRate>75</packageBranchRate>
+						<totalBranchRate>80</totalBranchRate>
+						<totalLineRate>80</totalLineRate>
+						<packageLineRate>80</packageLineRate>
+						<packageBranchRate>80</packageBranchRate>
 					</check>
 					<instrumentation>
 						<excludes>
 							<exclude>**/*$*</exclude>
 							<exclude>**/*Test.class</exclude>
+							<exclude>**/*Exception.class</exclude>
 						</excludes>
 					</instrumentation>
 					<formats>
@@ -281,9 +347,30 @@
 				<executions>
 					<execution>
 						<id>cobertura</id>
-						<phase>verify</phase>
+						<phase>test</phase>
 						<goals>
 							<goal>cobertura</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<preparationGoals>clean verify</preparationGoals>
+					<goals>deploy</goals>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>javadoc-jar</id>
+						<phase>package</phase>
+						<goals>
+							<goal>aggregate-jar</goal>
 						</goals>
 					</execution>
 				</executions>
@@ -298,7 +385,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.7</version>
 				<executions>
 					<execution>
 						<id>javadoc-jar</id>
@@ -346,8 +432,8 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<scp todir="${sourceforge.upload}"
-									password="${sf.password}" trust="true">
+								<scp todir="${sourceforge.upload}" password="${sf.password}"
+									trust="true">
 									<fileset dir="${project.build.directory}">
 										<include name="${project.build.finalName}*.jar" />
 									</fileset>
@@ -370,6 +456,177 @@
 				<version>1.0-beta-1</version>
 			</extension>
 		</extensions>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>2.3.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.3.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.12.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-pmd-plugin</artifactId>
+					<version>2.7.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>2.0</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>cobertura-maven-plugin</artifactId>
+					<version>2.5.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.8.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-scm-plugin</artifactId>
+					<version>1.5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>taglist-maven-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-ejb-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-report-plugin</artifactId>
+					<version>2.12.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jdepend-maven-plugin</artifactId>
+					<version>2.0-beta-2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>maven-jetty-plugin</artifactId>
+					<version>6.1.24</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>2.4</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>selenium-maven-plugin</artifactId>
+					<version>2.3</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.izpack</groupId>
+					<artifactId>izpack-maven-plugin</artifactId>
+					<version>1.0-alpha-5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jarsigner-plugin</artifactId>
+					<version>1.2</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.5</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jxr-plugin</artifactId>
+					<version>2.1</version>
+				</plugin>
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-pmd-plugin</artifactId>
+										<versionRange>[2.6,)</versionRange>
+										<goals>
+											<goal>cpd-check</goal>
+											<goal>check</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-checkstyle-plugin</artifactId>
+										<versionRange>[2.0,)</versionRange>
+										<goals>
+											<goal>checkstyle</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-antrun-plugin</artifactId>
+										<versionRange>[1.3,)</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 
 	<reporting>
@@ -415,18 +672,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<type>jar</type>
-			<scope>test</scope>
-			<optional>false</optional>
-		</dependency>
-		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.7</version>
 			<type>jar</type>
+			<scope>provided</scope>
 			<optional>false</optional>
 		</dependency>
 		<dependency>
@@ -435,6 +685,7 @@
 			<version>${iqser.version}</version>
 			<type>jar</type>
 			<optional>false</optional>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.iqser.core</groupId>
@@ -442,19 +693,27 @@
 			<version>${iqser.version}</version>
 			<type>jar</type>
 			<optional>false</optional>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.iqser.core</groupId>
-			<artifactId>iqser-test-api</artifactId>
+			<artifactId>iqser-core-test</artifactId>
 			<version>${iqser.version}</version>
 			<type>jar</type>
 			<optional>false</optional>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.iqser.gin.developer</groupId>
+			<artifactId>plugin-test-api</artifactId>
+			<version>${iqser.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>net.sf.iqser.plugin.file</groupId>
 			<artifactId>file-parser</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>2.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 

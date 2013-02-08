@@ -1,7 +1,6 @@
 package net.sf.iqser.plugin.mail;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -32,30 +31,33 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import junit.framework.TestCase;
+import junit.framework.Assert;
 import net.sf.iqser.plugin.mail.content.MailContentCreator;
-import net.sf.iqser.plugin.mail.test.MockAnalyzerTaskStarter;
 import net.sf.iqser.plugin.mail.test.MockContentProviderFacade;
 import net.sf.iqser.plugin.mail.test.MockRepository;
-import net.sf.iqser.plugin.mail.test.TestServiceLocator;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.PropertyConfigurator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.iqser.core.config.Configuration;
+import com.iqser.core.config.ServiceLocatorFactory;
+import com.iqser.core.exception.IQserException;
 import com.iqser.core.exception.IQserRuntimeException;
-import com.iqser.core.exception.IQserTechnicalException;
 import com.iqser.core.model.Attribute;
 import com.iqser.core.model.Content;
-import com.iqser.core.model.ContentItem;
-import com.iqser.core.repository.Repository;
+import com.iqser.core.repository.RepositoryReader;
+import com.iqser.core.repository.RepositoryWriter;
+import com.iqser.gin.developer.test.TestServiceLocator;
+import com.iqser.gin.developer.test.plugin.provider.ContentProviderTestCase;
 
-public class MailServerContentProviderTest extends TestCase {
+public class MailServerContentProviderTest extends ContentProviderTestCase {
 
 	private MailServerContentProvider mscp;
 	private String mailServer = "localhost";
 	private String userName = "test";
-	private String passWord = "test";
+	private String password = "test";
 	private String sslPort = "993";
 	private List<String> folders = new ArrayList<String>();
 
@@ -72,8 +74,8 @@ public class MailServerContentProviderTest extends TestCase {
 	List<String> mockMailsIds = null;// the ids of 20 mails from mail-server
 	private Map<String, String> attributeMappings = new HashMap<String, String>();
 
-	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 
 		folders = new ArrayList<String>();
 		attributeMappings = new HashMap<String, String>();
@@ -81,68 +83,42 @@ public class MailServerContentProviderTest extends TestCase {
 
 		PropertyConfigurator.configure("src/test/resources/log4j.properties");
 
-		super.setUp();
-
 		Properties initParams = new Properties();
-		initParams.setProperty("MAIL_SERVER", "localhost");
-
-		initParams.setProperty("USERNAME", "test");
-		initParams.setProperty("PASSWORD", "test");
-		initParams.setProperty("SSL-CONNECTION", "false");
-		initParams.setProperty("EMAIL-PORT", "143");
-		
-
+		initParams.setProperty("userName", "test");
+		initParams.setProperty("password", "test");
+		initParams.setProperty("sslConnection", "false");
+		initParams.setProperty("emailPort", "143");
 		initParams
-				.setProperty("ATTRIBUTE.MAPPINGS",
+				.setProperty("attributeMappings",
 						"{SENDER_MAIL_0:MAILUL_CELUI_CARE_TRIMITE,TITLE:TITLU,title:TITLU}");
-		initParams.setProperty("KEY-ATTRIBUTES", "[SENDER_NAME][TITLE]");
-		initParams.setProperty("EMAIL-FOLDER", "[INBOX]");
-		initParams.setProperty("SSL-PORT", "993");
-		initParams.setProperty("EMAIL-CACHE", cache);
+		initParams.setProperty("keyAttributes", "[SENDER_NAME][TITLE]");
+		initParams.setProperty("emailFolder", "[INBOX]");
+		initParams.setProperty("sslPort", "993");
+		initParams.setProperty("emailCache", cache);
+		initParams.setProperty("mailServer", "localhost");
 
 		attributeMappings.put("SENDER_MAIL_0", "MAILUL_CELUI_CARE_TRIMITE");
-		Configuration
-				.configure(new File("src/test/resources/iqser-config.xml"));
 
 		mscp = new MailServerContentProvider();
 		mscp.setInitParams(initParams);
-		mscp.setType("MAIL-SERVER");
-		mscp.setId(PROVIDER_ID);
+		mscp.setName(PROVIDER_ID);
 		mscp.setInitParams(initParams);
 		mscp.init();
 
-		TestServiceLocator sl = (TestServiceLocator) Configuration
-				.getConfiguration().getServiceLocator();
+		TestServiceLocator serviceLocator = (TestServiceLocator) ServiceLocatorFactory
+				.getServiceLocator();
+		MockRepository repositoryMock = new MockRepository();
+		serviceLocator.setRepositoryReader(repositoryMock);
+		serviceLocator.setRepositoryWriter(repositoryMock);
+		serviceLocator
+				.setContentProviderFacade(new MockContentProviderFacade());
 
-		MockRepository rep = new MockRepository();
-		rep.init();
-
-		sl.setRepository(rep);
-		sl.setAnalyzerTaskStarter(new MockAnalyzerTaskStarter());
-
-		MockContentProviderFacade cpFacade = new MockContentProviderFacade();
-		cpFacade.setRepo(rep);
-		sl.setFacade(cpFacade);
-		
 		mockMailsIds = testCreateMockMails();
-
-		Folder folder = connectMockupServer("false");
-		// Folder inboxFolder = folder.getStore().getFolder("INBOX");
-		// inboxFolder.copyMessages(inboxFolder.getMessages(), folder);
-		// for (Message inbMess : inboxFolder.getMessages()) {
-		// inbMess.setFlag(Flag.DELETED, true);
-		// }
-		// inboxFolder.close(true);
-
-		//assertEquals(MAIL_NUMBER, folder.getMessages().length);
-
 		folders.add("INBOX");
-
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
+	@After
+	public void tearDown() throws Exception {
 		Folder folder = connectMockupServer("false");
 		folder.open(Folder.READ_WRITE);
 		Message[] messages = folder.getMessages();
@@ -150,19 +126,18 @@ public class MailServerContentProviderTest extends TestCase {
 			message.setFlag(Flag.DELETED, true);
 		}
 		folder.close(true);
-
 	}
 
 	// test get binary data from the first mail from the server (mail with
 	// attachment)
+	@Test
 	public void testGetBinaryData() throws MessagingException {
-
-		assertEquals(mockMailsIds.size(), MAIL_ID_NUMBER);
-		Content content = mscp.getContent(mockMailsIds.get(0));// mscp.getContent("<4A28F5F7.5020000@recognos.ro>");
+		Assert.assertEquals(mockMailsIds.size(), MAIL_ID_NUMBER);
+		Content content = mscp.createContent(mockMailsIds.get(0));// mscp.getContent("<4A28F5F7.5020000@recognos.ro>");
 
 		MailServerUtils msu = new MailServerUtils();
 		msu.setMailServer(mailServer);
-		msu.setPassWord(passWord);
+		msu.setPassWord(password);
 		msu.setUserName(userName);
 
 		Folder folder = connectMockupServer("true");
@@ -189,58 +164,59 @@ public class MailServerContentProviderTest extends TestCase {
 
 		byte[] binaryData = mscp.getBinaryData(content);
 
-		assertEquals(byteArray.length, binaryData.length);
+		Assert.assertEquals(byteArray.length, binaryData.length);
 
-		for (int i = 0; i < byteArray.length; i++)
-			assertEquals(byteArray[i], binaryData[i]);
-
-	}
-
-	public void testDestroy() {
+		for (int i = 0; i < byteArray.length; i++) {
+			Assert.assertEquals(byteArray[i], binaryData[i]);
+		}
 
 	}
 
+	@Test
 	public void testGetActions() {
-		Collection actions = mscp.getActions(null);
-		assertEquals(actions.size(), 1);
+		Collection<String> actions = mscp.getActions(null);
+		Assert.assertEquals(actions.size(), 1);
 	}
 
+	@Test
 	public void testGetContentString() {
-		assertTrue(mockMailsIds.size() == MAIL_ID_NUMBER);
+		Assert.assertTrue(mockMailsIds.size() == MAIL_ID_NUMBER);
 		String id = mockMailsIds.get(0);
-		Content content = mscp.getContent(id);
+		Content content = mscp.createContent(id);
 		// Attribute attribute2 = content.getAttributeByName("RECEIVED_DATE");
 		Attribute attribute3 = content.getAttributeByName("SENDER_NAME_0");
-		assertNotNull(attribute3);
+		Assert.assertNotNull(attribute3);
 		String fulltext = content.getFulltext();
-		assertNotNull(fulltext);
-		assertEquals("Hi", fulltext);
-		// assertNotNull(attribute2);
-		assertNotNull(content);
+		Assert.assertNotNull(fulltext);
+		Assert.assertEquals("Hi", fulltext);
+		// Assert.assertNotNull(attribute2);
+		Assert.assertNotNull(content);
 		Attribute attribute = content
 				.getAttributeByName("MESSAGE_ATTACHMENTS_NAME_0");
 		// attribute
-		assertNotNull(attribute);
+		Assert.assertNotNull(attribute);
 		String value = attribute.getValue();
-		assertNotNull(value);
-		content = mscp.getContent(value);
-		assertNotNull(content);
-		assertEquals("testing send data with attachments",
+		Assert.assertNotNull(value);
+		content = mscp.createContent(value);
+		Assert.assertNotNull(content);
+		Assert.assertEquals("testing send data with attachments",
 				content.getFulltext());
 		id = mockMailsIds.get(1);
-		content = mscp.getContent(id);
-		assertNotNull(content);
+		content = mscp.createContent(id);
+		Assert.assertNotNull(content);
 		id = mockMailsIds.get(2);
-		content = mscp.getContent(id);
-		assertNotNull(content);
+		content = mscp.createContent(id);
+		Assert.assertNotNull(content);
 		id = mockMailsIds.get(3);
-		content = mscp.getContent(id);
-		assertNotNull(content);
-		
-		//test owner
-		assertEquals(userName,content.getAttributeByName("owner").getValue());
+		content = mscp.createContent(id);
+		Assert.assertNotNull(content);
+
+		// test owner
+		Assert.assertEquals(userName, content.getAttributeByName("owner")
+				.getValue());
 	}
 
+	@Test
 	public void testGetContentInputStream() throws IOException {
 		Store store;
 		try {
@@ -256,7 +232,7 @@ public class MailServerContentProviderTest extends TestCase {
 			Session session = Session.getDefaultInstance(props);
 			store = session.getStore("imap");
 
-			store.connect(mailServer, userName, passWord);
+			store.connect(mailServer, userName, password);
 
 			Folder folder = store.getFolder("INBOX");
 			folder.open(Folder.READ_ONLY);
@@ -276,17 +252,18 @@ public class MailServerContentProviderTest extends TestCase {
 
 			InputStream inputStream = new ByteArrayInputStream(byteArray);
 
-			Content content = mscp.getContent(inputStream);
-			assertTrue(content.getFulltext() != null);
+			Content content = mscp.createContent(inputStream);
+			Assert.assertTrue(content.getFulltext() != null);
 
-			assertNotNull(content
+			Assert.assertNotNull(content
 					.getAttributeByName("MESSAGE_ATTACHMENTS_NAME_0"));
 
-			assertNotNull(content.getFulltext());
-			assertEquals("Hi", content.getFulltext());
+			Assert.assertNotNull(content.getFulltext());
+			Assert.assertEquals("Hi", content.getFulltext());
 
-			//test owner
-			assertEquals(userName,content.getAttributeByName("owner").getValue());
+			// test owner
+			Assert.assertEquals(userName, content.getAttributeByName("owner")
+					.getValue());
 		} catch (NoSuchProviderException e) {
 			throw new IQserRuntimeException(e);
 		} catch (MessagingException e) {
@@ -295,19 +272,22 @@ public class MailServerContentProviderTest extends TestCase {
 
 	}
 
+	@Test
 	public void testGetContentUrls() {
 
-		Collection contentUrls = getMailContentCreator().getMailServerURLs(
-				new Date(0).getTime());
-		assertEquals(10, contentUrls.size());
+		Collection<String> contentUrls = getMailContentCreator()
+				.getMailServerURLs(new Date(0).getTime());
+		Assert.assertEquals(10, contentUrls.size());
 	}
 
+	@SuppressWarnings("unchecked")
+	@Test
 	public void testInit() {
 
 		try {
 			Field field1 = mscp.getClass().getDeclaredField("mailServer");
 			Field field2 = mscp.getClass().getDeclaredField("userName");
-			Field field3 = mscp.getClass().getDeclaredField("passWord");
+			Field field3 = mscp.getClass().getDeclaredField("password");
 			Field field4 = mscp.getClass().getDeclaredField("sslConnection");
 			Field field5 = mscp.getClass().getDeclaredField("folderAttributes");
 			Field field6 = mscp.getClass().getDeclaredField("sslPort");
@@ -326,27 +306,27 @@ public class MailServerContentProviderTest extends TestCase {
 			String sslPort = (String) field6.get(mscp);
 			String mailServer = (String) field1.get(mscp);
 			String userName = (String) field2.get(mscp);
-			String passWord = (String) field3.get(mscp);
+			String password = (String) field3.get(mscp);
 			String sslConnection = (String) field4.get(mscp);
 			List<String> folders = (List<String>) field5.get(mscp);
 			List<String> keyAttributes = (List<String>) field7.get(mscp);
 			Map<String, String> mappingAttrs = (Map<String, String>) field8
 					.get(mscp);
 
-			assertEquals(sslPort, "993");
-			assertTrue(folders.size() == 1);
-			assertEquals(mailServer, "localhost");
-			assertEquals(userName, "test");
-			assertEquals(passWord, "test");
-			assertEquals(sslConnection, "false");
-			assertEquals(3, mappingAttrs.keySet().size());
-			assertEquals("MAILUL_CELUI_CARE_TRIMITE",
+			Assert.assertEquals(sslPort, "993");
+			Assert.assertTrue(folders.size() == 1);
+			Assert.assertEquals(mailServer, "localhost");
+			Assert.assertEquals(userName, "test");
+			Assert.assertEquals(password, "test");
+			Assert.assertEquals(sslConnection, "false");
+			Assert.assertEquals(3, mappingAttrs.keySet().size());
+			Assert.assertEquals("MAILUL_CELUI_CARE_TRIMITE",
 					mappingAttrs.get("SENDER_MAIL_0"));
-			assertEquals("TITLU", mappingAttrs.get("TITLE"));
-			assertEquals("TITLU", mappingAttrs.get("title"));
-			assertEquals(2, keyAttributes.size());
-			assertEquals("SENDER_NAME", keyAttributes.get(0));
-			assertEquals("TITLE", keyAttributes.get(1));
+			Assert.assertEquals("TITLU", mappingAttrs.get("TITLE"));
+			Assert.assertEquals("TITLU", mappingAttrs.get("title"));
+			Assert.assertEquals(2, keyAttributes.size());
+			Assert.assertEquals("SENDER_NAME", keyAttributes.get(0));
+			Assert.assertEquals("TITLE", keyAttributes.get(1));
 
 		} catch (SecurityException e) {
 			e.printStackTrace();
@@ -365,9 +345,9 @@ public class MailServerContentProviderTest extends TestCase {
 
 		// the ids of the mails that are used for other operations
 		List<String> ids = new ArrayList<String>();
-		String id;		
+		String id;
 		int count;
-		
+
 		id = addMailWithAttachments("Mail Attachment " + 0);
 		ids.add(id);
 
@@ -399,7 +379,7 @@ public class MailServerContentProviderTest extends TestCase {
 
 		MailServerUtils msu = new MailServerUtils();
 		msu.setUserName(userName);
-		msu.setPassWord(passWord);
+		msu.setPassWord(password);
 		msu.setMailServer(mailServer);
 		msu.setSslPort("993");
 
@@ -420,7 +400,7 @@ public class MailServerContentProviderTest extends TestCase {
 		props.setProperty("mail.transport.protocol", "smtp");
 		props.setProperty("mail.host", mailServer);
 		props.setProperty("mail.user", userName);
-		props.setProperty("mail.password", passWord);
+		props.setProperty("mail.password", password);
 
 		Session mailSession = Session.getInstance(props, null);
 		Transport transport = mailSession.getTransport();
@@ -452,7 +432,7 @@ public class MailServerContentProviderTest extends TestCase {
 		props.setProperty("mail.transport.protocol", "smtp");
 		props.setProperty("mail.host", mailServer);
 		props.setProperty("mail.user", userName);
-		props.setProperty("mail.password", passWord);
+		props.setProperty("mail.password", password);
 
 		Session session = Session.getInstance(props, null);
 
@@ -481,7 +461,7 @@ public class MailServerContentProviderTest extends TestCase {
 
 		// Put parts in message
 		message.setContent(multipart);
-		
+
 		// Send the message
 		Transport.send(message);
 
@@ -511,7 +491,7 @@ public class MailServerContentProviderTest extends TestCase {
 		props.setProperty("mail.transport.protocol", "smtp");
 		props.setProperty("mail.host", mailServer);
 		props.setProperty("mail.user", userName);
-		props.setProperty("mail.password", passWord);
+		props.setProperty("mail.password", password);
 
 		// Get session
 		Session session = Session.getInstance(props, null);
@@ -606,31 +586,33 @@ public class MailServerContentProviderTest extends TestCase {
 		return message.getHeader("MESSAGE-ID")[0];
 	}
 
+	@Test
 	public void testConnection() throws SecurityException,
 			NoSuchMethodException, IllegalArgumentException,
 			IllegalAccessException, InvocationTargetException {
 
 		MailServerUtils msu = new MailServerUtils();
 		msu.setUserName(userName);
-		msu.setPassWord(passWord);
+		msu.setPassWord(password);
 		msu.setMailServer(mailServer);
 		msu.setSslPort("993");
 
 		Store store = msu.attemptConnectionMailServer("true");
 		boolean connected = store.isConnected();
-		assertTrue(connected);
+		Assert.assertTrue(connected);
 	}
 
 	public void testOnChangeEvent() {
 
 	}
 
-	public void testChangeKeyAttributes() throws IQserTechnicalException {
+	@Test
+	public void testChangeKeyAttributes() throws IQserException {
 
-		mscp.doSynchonization();
+		mscp.doSynchronization();
 
-		Repository repository = Configuration.getConfiguration()
-				.getServiceLocator().getRepository();
+		RepositoryReader repository = ServiceLocatorFactory.getServiceLocator()
+				.getRepositoryReader();
 
 		Collection<Content> contents = repository.getContentByProvider(
 				PROVIDER_ID, true);
@@ -639,26 +621,27 @@ public class MailServerContentProviderTest extends TestCase {
 			if (content.getType().equalsIgnoreCase("EMAIL")) {
 				for (Attribute attr : content.getAttributes()) {
 					if (!"SENDER_NAME_0".equalsIgnoreCase(attr.getName()))
-						assertTrue(!attr.isKey());
+						Assert.assertTrue(!attr.isKey());
 					else
-						assertTrue(attr.isKey());
+						Assert.assertTrue(attr.isKey());
 				}
 			} else {
 				Attribute titleAttr = content.getAttributeByName("TITLE");
 				if (titleAttr != null)
-					assertTrue(titleAttr.isKey());
+					Assert.assertTrue(titleAttr.isKey());
 			}
 
 		}
 
 	}
 
-	public void testKeyMappingAttributes() throws IQserTechnicalException {
+	@Test
+	public void testKeyMappingAttributes() throws IQserException {
 
-		mscp.doSynchonization();
+		mscp.doSynchronization();
 
-		Repository repository = Configuration.getConfiguration()
-				.getServiceLocator().getRepository();
+		RepositoryReader repository = ServiceLocatorFactory.getServiceLocator()
+				.getRepositoryReader();
 
 		Collection<Content> contents = repository.getContentByProvider(
 				PROVIDER_ID, true);
@@ -668,40 +651,40 @@ public class MailServerContentProviderTest extends TestCase {
 				Attribute attribute = content
 						.getAttributeByName("MAILUL_CELUI_CARE_TRIMITE");
 
-				assertNotNull(attribute);
+				Assert.assertNotNull(attribute);
 			}
 		}
 	}
 
+	@Test
 	public void testPerformAction() {
 
 		try {
+			RepositoryReader repository = ServiceLocatorFactory
+					.getServiceLocator().getRepositoryReader();
 
-			Repository repository = Configuration.getConfiguration()
-					.getServiceLocator().getRepository();
+			mscp.doSynchronization();
 
-			mscp.doSynchonization();
+			Collection<Content> existingContents = repository
+					.getContentByProvider(PROVIDER_ID, false);
 
-			ArrayList<ContentItem> existingContents = repository
-					.getAllContentItem(-1);
-
-			assertTrue(existingContents.size() > 0);
+			Assert.assertTrue(existingContents.size() > 0);
 			int expected = MAIL_NUMBER + ATTACHMENT_FILES
 					+ (MAIL_NUMBER / 2 - 1);
-			assertEquals(expected, existingContents.size());
+			Assert.assertEquals(expected, existingContents.size());
 
 			Collection<Content> contents = repository.getContentByProvider(
 					PROVIDER_ID, true);
 
-			assertEquals(expected, contents.size());
+			Assert.assertEquals(expected, contents.size());
 
 			for (Content content : contents) {
-				assertEquals(PROVIDER_ID, content.getProvider());
+				Assert.assertEquals(PROVIDER_ID, content.getProvider());
 			}
 
 			MailServerUtils msu = new MailServerUtils();
 			msu.setUserName(userName);
-			msu.setPassWord(passWord);
+			msu.setPassWord(password);
 			msu.setMailServer(mailServer);
 
 			Store store = msu.attemptConnectionMailServer("false");
@@ -712,97 +695,97 @@ public class MailServerContentProviderTest extends TestCase {
 			Message[] messages = folder.getMessages();
 
 			for (Message message : messages) {
-				Content content = mscp.getContent(message
+				Content content = mscp.createContent(message
 						.getHeader("MESSAGE-ID")[0]);
-				assertNotNull(content);
-				mscp.performAction("delete", content);
+				Assert.assertNotNull(content);
+				mscp.performAction("delete", null, content);
 
 			}
 			store = msu.attemptConnectionMailServer("false");
 			folder = store.getFolder("INBOX");
-			assertEquals(0, folder.getMessageCount());
+			Assert.assertEquals(0, folder.getMessageCount());
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void testDoSynchonization() throws IQserTechnicalException,
+	@Test
+	public void testDoSynchonization() throws IQserException,
 			MessagingException {
+		RepositoryReader repositoryReader = ServiceLocatorFactory
+				.getServiceLocator().getRepositoryReader();
 
-		Repository repository = Configuration.getConfiguration()
-				.getServiceLocator().getRepository();
-
-		ArrayList<ContentItem> existingContents = repository
-				.getAllContentItem(-1);
-
-		Collection contents = repository.getContentByProvider(PROVIDER_ID, true);
-		assertTrue(contents.size() == 0);
+		Collection<Content> contents = repositoryReader.getContentByProvider(
+				PROVIDER_ID, true);
+		Assert.assertTrue(contents.size() == 0);
 
 		// List<String> contentUrls = new ArrayList<String>(
 		// getMailContentCreator().getMailServerURLs());
 
-		mscp.doSynchonization();
+		mscp.doSynchronization();
 
-		contents = repository.getContentByProvider(PROVIDER_ID, true);
+		contents = repositoryReader.getContentByProvider(PROVIDER_ID, true);
 
 		for (Object contentObject : contents) {
 			Content content = (Content) contentObject;
 			if (!content.getType().equalsIgnoreCase("EMAIL")) {
 				String fulltext = content.getFulltext();
-				assertNotNull(fulltext);
-				assertTrue(fulltext.trim().length() > 0);
+				Assert.assertNotNull(fulltext);
+				Assert.assertTrue(fulltext.trim().length() > 0);
 			} else {
 				Attribute attribute = content
 						.getAttributeByName("MESSAGE_FOLDER");
-				assertEquals("INBOX", attribute.getValue());
+				Assert.assertEquals("INBOX", attribute.getValue());
 			}
 
 		}
 
 		int expected = MAIL_NUMBER + ATTACHMENT_FILES + (MAIL_NUMBER / 2 - 1);
-		assertEquals(expected, contents.size());
+		Assert.assertEquals(expected, contents.size());
 
 	}
 
-	public void testDoHousekeeping() throws IQserTechnicalException,
-			MessagingException, IOException {
+	@Test
+	public void testDoHousekeeping() throws IQserException, MessagingException,
+			IOException {
 
-		Repository repository = Configuration.getConfiguration()
-				.getServiceLocator().getRepository();
+		RepositoryWriter repositoryWriter = ServiceLocatorFactory
+				.getServiceLocator().getRepositoryWriter();
+		RepositoryReader repositoryReader = ServiceLocatorFactory
+				.getServiceLocator().getRepositoryReader();
 
-		assertEquals(mockMailsIds.size(), 4);
+		Assert.assertEquals(mockMailsIds.size(), 4);
 		String id = mockMailsIds.get(0);
-		Content content = mscp.getContent(id);
-		repository.addContent(content);
+		Content content = mscp.createContent(id);
+		repositoryWriter.addOrUpdateContent(content);
 
 		id = mockMailsIds.get(1);
-		content = mscp.getContent(id);
-		repository.addContent(content);
+		content = mscp.createContent(id);
+		repositoryWriter.addOrUpdateContent(content);
 
 		String mailWithAttachments = addMailWithAttachments("s1");
-		content = mscp.getContent(mailWithAttachments);
-		repository.addContent(content);
+		content = mscp.createContent(mailWithAttachments);
+		repositoryWriter.addOrUpdateContent(content);
 
-		ArrayList<ContentItem> existingContents = repository
-				.getAllContentItem(-1);
-		assertTrue(existingContents.size() == 3);
+		Collection<Content> existingContents = repositoryReader.getContentByProvider(PROVIDER_ID, false);
+		Assert.assertTrue(existingContents.size() == 3);
 		Folder folder = connectMockupServer("true");
 
-		assertEquals(folder.getMessageCount(), 11);
+		Assert.assertEquals(folder.getMessageCount(), 11);
 		MailServerUtils msu = new MailServerUtils();
 		Message message = msu.identifyMessage(folder, mailWithAttachments);
 		message.setFlag(Flag.DELETED, true);
 		folder.close(true);
 		folder = connectMockupServer("true");
-		assertEquals(folder.getMessageCount(), 10);
+		Assert.assertEquals(folder.getMessageCount(), 10);
 
 		mscp.doHousekeeping();
 
 		folder = connectMockupServer("true");
-		assertEquals(10, folder.getMessageCount());
-		existingContents = repository.getAllContentItem(-1);
-		assertEquals(2, existingContents.size());
+		Assert.assertEquals(10, folder.getMessageCount());
+		existingContents = repositoryReader.getContentByProvider(PROVIDER_ID, false);
+		Assert.assertEquals(2, existingContents.size());
 	}
 
 	private MailContentCreator getMailContentCreator() {
@@ -810,7 +793,7 @@ public class MailServerContentProviderTest extends TestCase {
 		MailContentCreator mc = new MailContentCreator();
 
 		mc.setMailServer(mailServer);
-		mc.setPassWord(passWord);
+		mc.setPassWord(password);
 		mc.setSslConnection("true");
 		mc.setUserName(userName);
 		mc.setFolders(folders);

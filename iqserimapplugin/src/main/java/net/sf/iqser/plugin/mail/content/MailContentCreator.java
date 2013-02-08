@@ -58,7 +58,7 @@ public class MailContentCreator {
 	/**
 	 * the password.
 	 */
-	private String passWord;
+	private String password;
 
 	/**
 	 * flag for secured connection.
@@ -174,7 +174,7 @@ public class MailContentCreator {
 	private void setMailServerUtils() {
 		msu.setMailServer(mailServer);
 		msu.setUserName(userName);
-		msu.setPassWord(passWord);
+		msu.setPassWord(password);
 		msu.setSslPort(sslPort);
 		msu.setPort(port);
 	}
@@ -309,17 +309,17 @@ public class MailContentCreator {
 	 * @return the password
 	 */
 	public String getPassWord() {
-		return passWord;
+		return password;
 	}
 
 	/**
 	 * sets the password.
 	 * 
-	 * @param passWord
+	 * @param password
 	 *            a password specific for a user and a mail server
 	 */
-	public void setPassWord(String passWord) {
-		this.passWord = passWord;
+	public void setPassWord(String password) {
+		this.password = password;
 	}
 
 	/**
@@ -609,13 +609,13 @@ public class MailContentCreator {
 	 * @param sinceTime   a timestamp from the last synchronization
 	 * @return the collection of message-ids (collection of string)
 	 */
-	public Collection getMailServerURLs(long sinceTime) {
+	public Collection<String> getMailServerURLs(long sinceTime) {
 
 		logger.info("extracting messages urls");
 		MailServerUtils msu = new MailServerUtils();
 
 		msu.setMailServer(mailServer);
-		msu.setPassWord(passWord);
+		msu.setPassWord(password);
 		msu.setUserName(userName);
 		msu.setSslPort(sslPort);
 
@@ -644,7 +644,6 @@ public class MailContentCreator {
 				}
 
 				folder.close(true);
-				store.close();
 			}
 		} catch (MessagingException e) {
 			throw new IQserRuntimeException(e);
@@ -750,9 +749,9 @@ public class MailContentCreator {
 	 *            - the key attributes for the content
 	 */
 	public void updateKeyAttributes(Content content,
-			Collection keyAttributesList) {
+			Collection<String> keyAttributesList) {
 
-		Collection attributes = content.getAttributes();
+		Collection<Attribute> attributes = content.getAttributes();
 
 		// check if attributes must be changed to key attribute
 		for (Object attribute : attributes) {
@@ -781,9 +780,9 @@ public class MailContentCreator {
 	 * @param attributeMappings
 	 *            the new attributes
 	 */
-	public void updateAttributes(Content content, Map attributeMappings) {
+	public void updateAttributes(Content content, Map<String, String> attributeMappings) {
 
-		Collection attributes = content.getAttributes();
+		Collection<Attribute> attributes = content.getAttributes();
 
 		// each attribute is checked in order to see if it must be changed
 		for (Object attribute : attributes) {

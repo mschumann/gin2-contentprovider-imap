@@ -38,7 +38,6 @@ public class Utils {
 		Content newContent = new Content();
 		newContent.setContentUrl(content.getContentUrl());
 		newContent.setFulltext(content.getFulltext());
-		newContent.setIcon(content.getIcon());
 		newContent.setModificationDate(content.getModificationDate());
 		newContent.setProvider(content.getProvider());
 		newContent.setType(content.getType());

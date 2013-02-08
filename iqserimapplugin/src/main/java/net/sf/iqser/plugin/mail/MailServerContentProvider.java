@@ -24,11 +24,11 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.iqser.core.event.Event;
 import com.iqser.core.exception.IQserException;
 import com.iqser.core.exception.IQserRuntimeException;
 import com.iqser.core.model.Content;
-import com.iqser.core.plugin.AbstractContentProvider;
+import com.iqser.core.model.Parameter;
+import com.iqser.core.plugin.provider.AbstractContentProvider;
 
 /**
  * executes operations on an object graph.
@@ -51,7 +51,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	/**
 	 * password.
 	 */
-	private String passWord;
+	private String password;
 
 	/**
 	 * connection flag true or false.
@@ -67,7 +67,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	 * the port of the mail server.
 	 */
 	private String port;
-	
+
 	/**
 	 * flag if the synchronization is cached or not (true or false).
 	 */
@@ -105,7 +105,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	 * @param content
 	 *            - the content that corresponds to an email from the mail
 	 *            server
-	 *  @return the binary information of the content
+	 * @return the binary information of the content
 	 */
 	public byte[] getBinaryData(Content content) {
 		/*
@@ -117,7 +117,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		MailServerUtils msu = new MailServerUtils();
 
 		msu.setMailServer(mailServer);
-		msu.setPassWord(passWord);
+		msu.setPassWord(password);
 		msu.setUserName(userName);
 
 		String contentUrl = content.getContentUrl();
@@ -167,46 +167,12 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	 * @return a collection of actions for a content
 	 */
 	@Override
-	public Collection getActions(Content content) {
+	public Collection<String> getActions(Content content) {
 
 		logger.info("get actions available for content");
 
 		String[] actions = new String[] { "delete" };
 		return Arrays.asList(actions);
-	}
-
-	/**
-	 * get the content from a specified url.
-	 * @param contentURL   the url of the content
-	 * @return content    the new content that is created
-	 */
-	@Override
-	public Content getContent(String contentURL) {
-
-		logger.info("get content info for " + contentURL);
-		MailContentCreator mcc = getMailContentCreator();
-
-		Content content = null;
-		MailContent mc = null;
-		if (isEmailURL(contentURL)) {
-
-			mc = mcc.getContent(contentURL, keyAttributesList, this.getId());
-			content = mc.getContent();
-		} else {
-			int index = contentURL.indexOf(">") + 1;
-			String mailContentURL = contentURL.substring(0, index);
-			mc = mcc.getContent(mailContentURL, keyAttributesList, this.getId());
-			Collection<Content> attachmentContents = mc.getAttachmentContents();
-			for (Content contentAtt : attachmentContents) {
-				if (contentAtt.getContentUrl().equalsIgnoreCase(contentURL)) {
-					content = contentAtt;
-					break;
-				}
-			}
-		}
-
-		return content;
-
 	}
 
 	private boolean isEmailURL(String contentURL) {
@@ -219,8 +185,8 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	/**
 	 * creates an instance to {@link MailContentCreator}.
 	 * 
-	 * @return an object representing that can perform operations
-	 *                  on the object graph and on the mail server
+	 * @return an object representing that can perform operations on the object
+	 *         graph and on the mail server
 	 */
 	private MailContentCreator getMailContentCreator() {
 
@@ -228,7 +194,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 		MailContentCreator mc = new MailContentCreator();
 
 		mc.setMailServer(mailServer);
-		mc.setPassWord(passWord);
+		mc.setPassWord(password);
 		mc.setSslConnection(sslConnection);
 		mc.setUserName(userName);
 		mc.setFolders(folderAttributes);
@@ -241,49 +207,22 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * create a content from an inputstream.
-	 * @param inputstream    the input stream from which the 
-	 *                        content object is created
-	 * @return the content that is created from the input stream.
-	 */
-	@Override
-	public Content getContent(InputStream inputstream) {
-
-		logger.info("get content for inputstream");
-		MailContentCreator mc = getMailContentCreator();
-
-		Content content = mc.getContent(inputstream, keyAttributesList,
-				this.getId()).getContent();
-
-		return content;
-	}
-
-	/**
-	 * nothing to do.
-	 * @return null
-	 */
-	@Override
-	public Collection getContentUrls() {
-		return null;
-	}
-
-	/**
 	 * initialize the content parameters.
 	 */
 	@Override
 	public void init() {
 		logger.info("initialize parameters...");
 		Properties params = getInitParams();
-		mailServer = (String) params.get("MAIL_SERVER");
-		userName = (String) params.get("USERNAME");
-		passWord = (String) params.get("PASSWORD");
-		sslConnection = (String) params.getProperty("SSL-CONNECTION");
-		sslPort = (String) params.getProperty("SSL-PORT");
-		port = (String) params.getProperty("EMAIL-PORT");
-		setCache((String) params.getProperty("EMAIL-CACHE"));
+		mailServer = params.getProperty("mailServer");
+		userName = params.getProperty("userName");
+		password = params.getProperty("password");
+		sslConnection = params.getProperty("sslConnection");
+		sslPort = params.getProperty("sslPort");
+		port = params.getProperty("emailPort");
+		setCache(params.getProperty("emailCache", "true"));
 
-		String keyAttributes = (String) params.get("KEY-ATTRIBUTES");
-		String mailLocations = (String) params.get("EMAIL-FOLDER");
+		String keyAttributes = params.getProperty("keyAttributes");
+		String mailLocations = params.getProperty("emailFolder");
 		String regex = "\\s*\\]\\s*\\[\\s*|\\s*\\[\\s*|\\s*\\]\\s*";
 
 		keyAttributesList = extractParameters(keyAttributes, regex);
@@ -294,7 +233,8 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			folderAttributes.add("INBOX");
 		}
 
-		String mappings = (String) params.get("ATTRIBUTE.MAPPINGS");
+		String mappings = (String) params
+				.getProperty("attributeMappings", "{}");
 		JSONObject json = null;
 		try {
 			json = new JSONObject(mappings);
@@ -302,6 +242,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			throw new IQserRuntimeException(e);
 		}
 
+		@SuppressWarnings("rawtypes")
 		Iterator keys = json.keys();
 		while (keys.hasNext()) {
 			String key = (String) keys.next();
@@ -320,8 +261,9 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	 * 
 	 * @param keyAttributes
 	 *            - the string with the specified attributes
-	 * @param regex    the regular expression that is used for extracting the 
-	 *                  parameters
+	 * @param regex
+	 *            the regular expression that is used for extracting the
+	 *            parameters
 	 * @return a collection of string representing the extracted parameters
 	 */
 	private Collection<String> extractParameters(String keyAttributes,
@@ -342,45 +284,13 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * nothing to do.
-	 * @param event   the event that is raised
-	 */
-	@Override
-	public void onChangeEvent(Event event) {
-	}
-
-	/**
-	 * perform the operations returned by {@value getActions(content)} on a
-	 * content.
-	 * 
-	 * @param action
-	 *            - the action to be performed
-	 * @param content  
-	 *            - the content on which the operation is performed
-	 */
-	@Override
-	public void performAction(String action, Content content) {
-
-		logger.info("performing operation " + action + " on content "
-				+ content.getContentUrl());
-		Collection<String> actions = getActions(content);
-
-		MailContentCreator mailContentCreator = getMailContentCreator();
-
-		if (actions.contains(action.toLowerCase())
-				&& action.toLowerCase().equals("delete")) {
-			performDeleteAction(content, mailContentCreator);
-		}
-
-	}
-
-	/**
 	 * perform delete operation on a certain content.
 	 * 
-	 * @param content the content on which the delete operation is performed
-	 * @param mailContentCreator   the object that performs the operations
-	 *                             on the object graph and also on the
-	 *                             mail server
+	 * @param content
+	 *            the content on which the delete operation is performed
+	 * @param mailContentCreator
+	 *            the object that performs the operations on the object graph
+	 *            and also on the mail server
 	 */
 	private void performDeleteAction(Content content,
 			MailContentCreator mailContentCreator) {
@@ -388,7 +298,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			// delete mail message
 			String contentUrl = content.getContentUrl();
 			MailContent mailContent = mailContentCreator.getContent(contentUrl,
-					keyAttributesList, this.getId());
+					keyAttributesList, getName());
 			String mailURL = mailContent.getContent().getContentUrl();
 			String folderName = content.getAttributeByName("MESSAGE_FOLDER")
 					.getValue();
@@ -410,46 +320,6 @@ public class MailServerContentProvider extends AbstractContentProvider {
 	}
 
 	/**
-	 * synchronize the object graph with the mail server if there are more mails
-	 * on the server we need to add them to the object graph.
-	 */
-	@Override
-	/*
-	 * get the mail message-ids from the mail-server if there are messages on
-	 * the server which are not in the object graph create content objects for
-	 * them and add them to the object graph
-	 */
-	public void doSynchonization() {
-
-		long nexttime = System.currentTimeMillis();
-		try {
-
-			MailContentCreator mailContentCreator = getMailContentCreator();
-
-			Collection<String> contentURLs = mailContentCreator
-					.getMailServerURLs(time);
-
-			for (String contentURL : contentURLs) {
-				if (!isExistingContent(contentURL)) {
-					MailContent mailContent = mailContentCreator.getContent(
-							contentURL, keyAttributesList, this.getId());
-					Content content = mailContent.getContent();
-					content.setProvider(this.getId());
-					addContent(content);
-					Collection<Content> attachmentContents = mailContent
-							.getAttachmentContents();
-					for (Content attachmentContent : attachmentContents) {
-						addContent(attachmentContent);
-					}
-				}
-			}
-			time = nexttime;
-		} catch (IQserException e) {
-			throw new IQserRuntimeException(e);
-		}		
-	}
-
-	/**
 	 * delete the contents from the object graphs if there are not in the email
 	 * server.
 	 */
@@ -468,7 +338,7 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			Collection<String> contentURLs = mailContentCreator
 					.getMailServerURLs(0);
 
-			Collection contents = getExistingContents();
+			Collection<Content> contents = getExistingContents();
 
 			for (Object object : contents) {
 				Content content = (Content) object;
@@ -485,7 +355,10 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * set the cache flag for the synchronization.
-	 * @param cache   the flag that specified if the synchronization is flaged or not
+	 * 
+	 * @param cache
+	 *            the flag that specified if the synchronization is flaged or
+	 *            not
 	 */
 	public void setCache(String cache) {
 		this.cache = cache;
@@ -493,10 +366,108 @@ public class MailServerContentProvider extends AbstractContentProvider {
 
 	/**
 	 * gets the cache flag.
+	 * 
 	 * @return the cache
 	 */
 	public String getCache() {
 		return cache;
 	}
 
+	public Content createContent(String contentUrl) {
+		logger.info("get content info for " + contentUrl);
+		MailContentCreator mcc = getMailContentCreator();
+
+		Content content = null;
+		MailContent mc = null;
+		if (isEmailURL(contentUrl)) {
+
+			mc = mcc.getContent(contentUrl, keyAttributesList, getName());
+			content = mc.getContent();
+		} else {
+			int index = contentUrl.indexOf(">") + 1;
+			String mailContentURL = contentUrl.substring(0, index);
+			mc = mcc.getContent(mailContentURL, keyAttributesList, getName());
+			Collection<Content> attachmentContents = mc.getAttachmentContents();
+			for (Content contentAtt : attachmentContents) {
+				if (contentAtt.getContentUrl().equalsIgnoreCase(contentUrl)) {
+					content = contentAtt;
+					break;
+				}
+			}
+		}
+
+		return content;
+
+	}
+
+	/**
+	 * create a content from an inputstream.
+	 * 
+	 * @param inStream
+	 *            the input stream from which the content object is created
+	 * @return the content that is created from the input stream.
+	 */
+	public Content createContent(InputStream inStream) {
+		logger.info("get content for inputstream");
+		MailContentCreator mc = getMailContentCreator();
+
+		Content content = mc.getContent(inStream, keyAttributesList, getName())
+				.getContent();
+
+		return content;
+	}
+
+	/**
+	 * synchronize the object graph with the mail server if there are more mails
+	 * on the server we need to add them to the object graph.
+	 */
+	@Override
+	/*
+	 * get the mail message-ids from the mail-server if there are messages on
+	 * the server which are not in the object graph create content objects for
+	 * them and add them to the object graph
+	 */
+	public void doSynchronization() {
+		long nexttime = System.currentTimeMillis();
+		try {
+
+			MailContentCreator mailContentCreator = getMailContentCreator();
+
+			Collection<String> contentURLs = mailContentCreator
+					.getMailServerURLs(time);
+
+			for (String contentURL : contentURLs) {
+				if (!isExistingContent(contentURL)) {
+					MailContent mailContent = mailContentCreator.getContent(
+							contentURL, keyAttributesList, getName());
+					Content content = mailContent.getContent();
+					content.setProvider(getName());
+					addContent(content);
+					Collection<Content> attachmentContents = mailContent
+							.getAttachmentContents();
+					for (Content attachmentContent : attachmentContents) {
+						addContent(attachmentContent);
+					}
+				}
+			}
+			time = nexttime;
+		} catch (IQserException e) {
+			throw new IQserRuntimeException(e);
+		}
+	}
+
+	@Override
+	public void performAction(String action, Collection<Parameter> parameters,
+			Content content) {
+		logger.info("performing operation " + action + " on content "
+				+ content.getContentUrl());
+		Collection<String> actions = getActions(content);
+
+		MailContentCreator mailContentCreator = getMailContentCreator();
+
+		if (actions.contains(action.toLowerCase())
+				&& action.toLowerCase().equals("delete")) {
+			performDeleteAction(content, mailContentCreator);
+		}
+	}
 }

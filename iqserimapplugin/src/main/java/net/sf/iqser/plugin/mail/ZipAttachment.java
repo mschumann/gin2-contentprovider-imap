@@ -9,13 +9,14 @@ import java.util.Collection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import com.iqser.core.model.Attribute;
+import com.iqser.core.model.Content;
+
 import net.sf.iqser.plugin.file.parser.FileParser;
 import net.sf.iqser.plugin.file.parser.FileParserException;
 import net.sf.iqser.plugin.file.parser.FileParserFactory;
 import net.sf.iqser.plugin.mail.content.Utils;
 
-import com.iqser.core.model.Attribute;
-import com.iqser.core.model.Content;
 
 /**
  * zip attachment creator.

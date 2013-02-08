@@ -3,28 +3,34 @@ package net.sf.iqser.plugin.mail.test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.iqser.core.exception.IQserTechnicalException;
+import com.iqser.core.exception.IQserException;
 import com.iqser.core.model.Concept;
 import com.iqser.core.model.Content;
-import com.iqser.core.model.ContentItem;
+import com.iqser.core.model.ContentConceptTuple;
+import com.iqser.core.model.ContentCooccurrenceTuple;
 import com.iqser.core.model.Cooccurrence;
-import com.iqser.core.model.Filter;
 import com.iqser.core.model.Relation;
-import com.iqser.core.model.SearchResult;
-import com.iqser.core.repository.Repository;
+import com.iqser.core.model.RelationEqualizer;
+import com.iqser.core.model.Result;
+import com.iqser.core.model.Statement;
+import com.iqser.core.model.UsageTrackerItem;
+import com.iqser.core.repository.RepositoryReader;
+import com.iqser.core.repository.RepositoryWriter;
 
 /**
  * Supports testing of classes of the iQser Web Content Provider Family.
  * 
- * @author Jšrg Wurzer
+ * @author Jï¿½rg Wurzer
  *
  */
-public class MockRepository implements Repository {
+public class MockRepository implements RepositoryReader, RepositoryWriter {
 	
-	private ArrayList<Content> cl = null;
+	private ArrayList<Content> cl = new ArrayList<Content>();
 		
 	public static final int ADD_CONTENT = 0;
 	
@@ -33,63 +39,37 @@ public class MockRepository implements Repository {
 	public static final int DELETE_CONTENT = 2;
 	
 	private static Logger logger = Logger.getLogger( MockRepository.class );
-	
-	
-	public void addConcept(Concept arg0) throws IQserTechnicalException {
 		
-
-	}
-
-	
-	public void addContent(Content c) throws IQserTechnicalException {
-		logger.debug("addContent() called for content " + c.getContentUrl());
+	@Override
+	public boolean addOrUpdateContent(Content c) throws IQserException {
+		logger.debug("addOrUpdateContent() called for content " + c.getContentUrl());
 		
-		Iterator iter = cl.iterator();
+		boolean isUpdate = false;
+		
+		Iterator<Content> iter = cl.iterator();
 		
 		while (iter.hasNext()) {
 			Content oldc = (Content)iter.next();
 			
 			if (oldc.getContentUrl().equals(c.getContentUrl()) && 
 					oldc.getProvider().equals(c.getProvider())) {
-				throw new IQserTechnicalException(
-						"Content object already exists", IQserTechnicalException.SEVERITY_ERROR);
+				iter.remove();
+				isUpdate = true;
+				break;
 			}
 		}
 			
 		cl.add(c);
-	}
-
-	
-	public void addContentItem(ContentItem arg0) throws IQserTechnicalException {
 		
-
+		return isUpdate;
 	}
-
 	
-	public void addCooccurrence(Cooccurrence arg0)
-			throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void addRelation(Relation arg0) throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void close() throws IQserTechnicalException {
-		
-
-	}
-
-	
+	@Override
 	public boolean contains(String url, String provider)
-			throws IQserTechnicalException {
+			throws IQserException {
 		logger.debug("contains() called for " + url + " and " + provider);
 		
-		Iterator iter = cl.iterator();
+		Iterator<Content> iter = cl.iterator();
 		Content c = null;
 		
 		while (iter.hasNext()) {
@@ -100,18 +80,12 @@ public class MockRepository implements Repository {
 		
 		return false;
 	}
-
 	
-	public void deleteConcept(Concept arg0) throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void deleteContent(Content c) throws IQserTechnicalException {
+	@Override
+	public void deleteContent(Content c) throws IQserException {
 		logger.debug("deleteContent() called for " + c.getContentUrl());
 		
-		Iterator iter = cl.iterator();
+		Iterator<Content> iter = cl.iterator();
 		boolean removed = false;
 		Content oldc = null;
 		
@@ -128,70 +102,16 @@ public class MockRepository implements Repository {
 		if (removed)
 			cl.remove(oldc);
 		else
-			throw new IQserTechnicalException(
-					"Old content object was not found", IQserTechnicalException.SEVERITY_ERROR);
+			throw new IQserException(
+					"Old content object was not found", IQserException.SEVERITY_ERROR);
 	}
-
 	
-	public void deleteContentItem(ContentItem arg0)
-			throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void deleteCooccurrence(Cooccurrence arg0)
-			throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void deleteRelation(long arg0, long arg1)
-			throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public ArrayList<ContentItem> getAllContentItem(long arg0)
-			throws IQserTechnicalException {
-		ArrayList out = new ArrayList();
-		out.addAll(cl);
-		return out;
-	}
-
-	
-	public Concept getConcept(String arg0) throws IQserTechnicalException {
-		
-		return null;
-	}
-
-	
-	public Concept getConcept(long arg0) throws IQserTechnicalException {
-		
-		return null;
-	}
-
-	
-	public Content getContent(long arg0) throws IQserTechnicalException {
-		
-		return null;
-	}
-
-	
-	public Content getContent(long arg0, Collection<String> arg1)
-			throws IQserTechnicalException {
-		
-		return null;
-	}
-
-	
+	@Override
 	public Content getContent(String url, String provider)
-			throws IQserTechnicalException {
+			throws IQserException {
 		logger.debug("getContent() called for " + url + " and " + provider);
 		
-		Iterator iter = cl.iterator();
+		Iterator<Content> iter = cl.iterator();
 		Content c = null;
 		
 		while (iter.hasNext()) {
@@ -201,19 +121,19 @@ public class MockRepository implements Repository {
 		}
 		
 		if (c == null)
-			throw new IQserTechnicalException(
-					"Content object was not found", IQserTechnicalException.SEVERITY_ERROR);
+			throw new IQserException(
+					"Content object was not found", IQserException.SEVERITY_ERROR);
 		
 		return null;
 	}
 
-	
-	public Collection getContentByProvider(String provider)
-			throws IQserTechnicalException {
+	@Override
+	public Collection<Content> getContentByProvider(String provider, boolean complete)
+			throws IQserException {
 		logger.debug("getContentByProvider() called for " + provider);
 		
-		Iterator iter = cl.iterator();
-		ArrayList out = new ArrayList();
+		Iterator<Content> iter = cl.iterator();
+		ArrayList<Content> out = new ArrayList<Content>();
 		
 		while (iter.hasNext()) {
 			Content c = (Content)iter.next();
@@ -221,192 +141,522 @@ public class MockRepository implements Repository {
 				out.add(c);
 		}
 		
-		if (out == null)
-			throw new IQserTechnicalException(
-					"No content object was not found", IQserTechnicalException.SEVERITY_ERROR);
-		
 		return out;
-
 	}
 
-	
-	public Collection getContentByProvider(String provider, boolean arg1)
-			throws IQserTechnicalException {
-		 return getContentByProvider(provider);
-	}
-
-	
-	public ContentItem getContentItem(long arg0, long arg1)
-			throws IQserTechnicalException {
+	@Override
+	public void addOrUpdateContentConceptTuple(long contentId,
+			String conceptName, double significance, int frequency)
+			throws IQserException {
+		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void addOrUpdateContentConceptTuples(Collection<Concept> concepts,
+			long contentId, int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addOrUpdateContentCooccurrenceTuple(long contentId,
+			String conceptName, String anotherConceptName, int frequency)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addOrUpdateContentCooccurrenceTuples(
+			Collection<Cooccurrence> cooccurrences, long contentId,
+			int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addOrUpdateStatement(Statement statement) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addOrUpdateStatements(Collection<Statement> statements)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addUsageTrackerItem(UsageTrackerItem item)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteConcept(Concept concept) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentConceptTuple(
+			ContentConceptTuple contentConceptTuple) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentConceptTuples(long contentId)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentConceptTuples(long contentId, int pluginInstanceId)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentConceptTuples(
+			Collection<ContentConceptTuple> contentConceptTuples,
+			long contentId, int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentCooccurrenceTuple(
+			ContentCooccurrenceTuple contentCooccurrenceTuple)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentCooccurrenceTuples(long contentId)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentCooccurrenceTuples(long contentId,
+			int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteContentCooccurrenceTuples(
+			Collection<ContentCooccurrenceTuple> contentCooccurrenceTuples,
+			long contentId, int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteCooccurrence(Cooccurrence cooc) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteStatement(Statement statement) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteStatements(Collection<Statement> statements)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteUsageTrackerItem(UsageTrackerItem item)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void normalizeStatementWeights(long subjectId, String predicate,
+			double normalizationFactor) throws IQserException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Collection<String> getAllAttributeNames() throws IQserException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
-	public Collection getContentTypes() throws IQserTechnicalException {
-		
+	@Override
+	public Collection<Long> getAllContentIds() throws IQserException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
-	public Cooccurrence getCooccurrence(long arg0, long arg1)
-			throws IQserTechnicalException {
-		
+	@Override
+	public Collection<String> getAttributeNames(Collection<Long> contentIds)
+			throws IQserException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
-	public int getDocumentFrequency(Concept arg0)
-			throws IQserTechnicalException {
-		
+	@Override
+	public Collection<String> getAttributesByProvider(String providerM)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<String> getAttributesByType(String typeM)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Concept getConcept(String concept) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Concept getConcept(long conceptId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Concept> getConcepts(long contentIDM)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Content getContent(long id) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Content getContent(long id, Collection<String> visibleAttributes)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Content getContent(String url, String provider, boolean complete)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContentConceptTuple getContentConceptTuple(long contentId,
+			long conceptId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<ContentConceptTuple> getContentConceptTuples(
+			long contentId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<ContentConceptTuple> getContentConceptTuples(
+			long contentId, int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<ContentConceptTuple> getContentConceptTuplesByConceptId(
+			long conceptId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public ContentCooccurrenceTuple getContentCooccurrenceTuple(long contentId,
+			long firstConceptId, long secondConceptId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<ContentCooccurrenceTuple> getContentCooccurrenceTuples(
+			long contentId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<ContentCooccurrenceTuple> getContentCooccurrenceTuples(
+			long contentId, int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Long> getContentIdsOfProvidersWithoutSecurityFilter()
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Content> getContentOfProvidersWithSecurityFilter(
+			boolean complete) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Content> getContentOfProvidersWithoutSecurityFilter(
+			boolean complete) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Long> getContentRelatedToContext(
+			Collection<Long> contextContentIds,
+			Collection<Long> resultContentIds) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<String> getContentTypes() throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Long> getContentsContainingAttribute(String attributeName)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Cooccurrence getCooccurrence(long conceptId, long anotherConceptId)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Cooccurrence getCooccurrence(String conceptName,
+			String anotherConceptName) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Cooccurrence> getCooccurrences(String conceptName)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getDocumentFrequency(Concept concept) throws IQserException {
+		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	
-	public String getDocumentText(long arg0) throws IQserTechnicalException {
-		
+	@Override
+	public Collection<String> getKeyAttributeNames(String contentProviderName)
+			throws IQserException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
-	public int getMaxDoc() throws IQserTechnicalException {
-		
+	@Override
+	public Collection<Relation> getReasoningLightRelations(
+			Set<Long> subjectIds, String predicate, Set<Long> objectIds)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Relation> getReasoningLightRelations(String subjectQuery,
+			String predicate, String objectQuery) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Statement> getReasoningLightStatements(
+			Set<Long> subjectIds, String predicate, Set<Long> objectIds)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Statement> getReasoningLightStatements(
+			String subjectQuery, String predicate, String objectQuery)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Statement> getReasoningLightStatements(
+			String subjectQuery, String predicate, String objectQuery,
+			double minWeight) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Concept> getRelatedConcepts(long contentIDM)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Concept> getRelatedConceptsByConcept(Concept concept)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Concept> getRelatedConceptsByConcepts(
+			Collection<Concept> concepts) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Result> getRelatedContent(Collection<Long> contentIds)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Result> getRelatedContent(long id, double minWeight)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Result> getRelatedContent(long id, double minWeight,
+			RelationEqualizer relationEqualizer) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Relation getRelation(long contentId, long anotherContentId)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getRelationCount(long contentId) throws IQserException {
+		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	
-	public Collection<SearchResult> getRelatedContent(long arg0, double arg1)
-			throws IQserTechnicalException {
-		
+	@Override
+	public Collection<Result> getResults(Long... contentIds)
+			throws IQserException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
-	public Relation getRelation(long arg0, long arg1)
-			throws IQserTechnicalException {
-		
+	@Override
+	public Statement getStatement(long subjectContentId, String predicate,
+			long objectContentId, int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	
-	public int getRelationCount(long arg0) throws IQserTechnicalException {
-		
-		return 0;
+	@Override
+	public Collection<Statement> getStatements(long contentId)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	
-	public void init() throws IQserTechnicalException {
-		cl = new ArrayList();
+	@Override
+	public Collection<Statement> getStatements(long contentId,
+			int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	
-	public boolean isEmpty() throws IQserTechnicalException {
-		
+	@Override
+	public Collection<Statement> getStatements(long contentId,
+			long anotherContentId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Statement> getStatements(long subjectContentId,
+			String predicate, long objectContentId, double minWeight,
+			int pluginInstanceId) throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List<Concept> getSubCategories(List<String> concepts)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public UsageTrackerItem getUsageTrackerItem(String username, long timestamp)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isEmpty() throws IQserException {
+		// TODO Auto-generated method stub
 		return false;
 	}
 
-	
-	public boolean isRelated(long arg0, long arg1)
-			throws IQserTechnicalException {
-		
+	@Override
+	public boolean isExistingContent(long contentId) throws IQserException {
+		// TODO Auto-generated method stub
 		return false;
 	}
 
-	
-	public void saveContentItems(Collection<ContentItem> arg0)
-			throws IQserTechnicalException {
-		
-
+	@Override
+	public boolean isRelated(long contentId1, long contentId2)
+			throws IQserException {
+		// TODO Auto-generated method stub
+		return false;
 	}
-
-	
-	public Collection search(Filter arg0) throws IQserTechnicalException {
-		
-		return null;
-	}
-
-	
-	public void updateConcept(Concept arg0) throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void updateContent(Content newc) throws IQserTechnicalException {
-		logger.debug("updateContent() called for " + newc.getContentUrl());
-		
-		Iterator iter = cl.iterator();
-		boolean updated = false;
-		
-		while (iter.hasNext()) {
-			Content oldc = (Content)iter.next();
-			
-			if (oldc.getContentUrl().equalsIgnoreCase(newc.getContentUrl()) && 
-					oldc.getProvider().equalsIgnoreCase(newc.getProvider())) {
-				int index = cl.indexOf(oldc);
-				cl.set(index, newc);
-				updated = true;
-			}
-		}
-		
-		if (!updated)
-			throw new IQserTechnicalException(
-					"Old content object was not found", IQserTechnicalException.SEVERITY_ERROR);
-	}
-
-	
-	public void updateContentItem(ContentItem arg0)
-			throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void updateCooccurrence(Cooccurrence arg0)
-			throws IQserTechnicalException {
-		
-
-	}
-
-	
-	public void updateRelation(Relation arg0) throws IQserTechnicalException {
-		
-
-	}
-
-
-	public Collection<String> getAttributesByProvider(String arg0)
-			throws IQserTechnicalException {
-		
-		return null;
-	}
-
-
-	public Collection<String> getAttributesByType(String arg0)
-			throws IQserTechnicalException {
-		
-		return null;
-	}
-
-
-	public Collection<Concept> getConcepts(long arg0)
-			throws IQserTechnicalException {
-		
-		return null;
-	}
-
-
-	public Collection<Concept> getRelatedConcepts(long arg0)
-			throws IQserTechnicalException {
-		
-		return null;
-	}
-
-
-	public Collection<Concept> getRelatedConceptsByConcept(Concept arg0)
-			throws IQserTechnicalException {
-		
-		return null;
-	}
-
 }

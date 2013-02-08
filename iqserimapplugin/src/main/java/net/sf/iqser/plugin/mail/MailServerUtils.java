@@ -35,7 +35,7 @@ public class MailServerUtils {
 	/**
 	 * the password.
 	 */
-	private String passWord;
+	private String password;
 
 	/**
 	 * the ssl port.
@@ -153,9 +153,9 @@ public class MailServerUtils {
 			store = session.getStore("imap");
 
 			if (port != 0)
-				store.connect(mailServer, port, userName, passWord);
+				store.connect(mailServer, port, userName, password);
 			else
-				store.connect(mailServer, userName, passWord);
+				store.connect(mailServer, userName, password);
 
 		} catch (NoSuchProviderException e) {
 			throw new IQserRuntimeException(e);
@@ -209,17 +209,17 @@ public class MailServerUtils {
 	 * @return the password of the user of the server
 	 */
 	public String getPassWord() {
-		return passWord;
+		return password;
 	}
 
 	/**
 	 * sets the password.
 	 * 
-	 * @param passWord
+	 * @param password
 	 *            the password that can be used on the server
 	 */
-	public void setPassWord(String passWord) {
-		this.passWord = passWord;
+	public void setPassWord(String password) {
+		this.password = password;
 	}
 
 	/**

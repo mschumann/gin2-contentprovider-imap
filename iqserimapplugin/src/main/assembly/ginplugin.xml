@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ginplugin
+	xsi:schemaLocation="http://www.iqser.com/schema/ginplugin/2.0 http://www.iqser.com/schema/ginplugin/2.0/ginplugin.xsd"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.iqser.com/schema/ginplugin/2.0">
+
+	<!-- xsi:schemaLocation="http://www.iqser.com/schema/ginplugin/2.0 http://www.iqser.com/schema/ginplugin/2.0/ginplugin.xsd" -->
+
+	<name>iQser IMAP-Content-Provider</name>
+	<vendor>iQser GmbH</vendor>
+	<version>###PROJECT_VERSION###</version>
+
+	<description>
+		iQser IMAP-Content-Provider
+	</description>
+
+	<classname type="ContentProvider">
+		<!-- full qualified class name -->
+		net.sf.iqser.plugin.mail.MailServerContentProvider</classname>
+
+	<params>
+		<param name="mailServer" type="String" optional="false">
+			mail server address
+		</param>
+		<param name="userName" type="String" optional="false">
+			mail server use
+		</param>
+		<param name="password" type="String" optional="false">
+			mail server user password
+		</param>
+		<param name="sslConnection" type="String" optional="true">
+			flag for secured connection
+		</param>
+		<param name="sslPort" type="Integer" optional="true">
+		</param>
+		<param name="attributeMappings" type="String" optional="true">
+			attribute mappings for certain parameters extracted by the mail api in json format
+		</param>
+		<param name="keyAttributes" type="String" optional="true">
+			the attributes that are changed to key-attributes
+		</param>
+		<param name="emailFolder" type="String" optional="true">
+			the folders that are taken from the email server by default it is taken only the INBOX
+		</param>
+		<param name="emailPort" type="Integer" optional="true">
+			port of the email server default 143
+		</param>
+		<param name="emailCache" type="Boolean" optional="true">
+			flag for retrieving latest emails from the last synchronization default is true
+		</param>
+	</params>
+</ginplugin>
