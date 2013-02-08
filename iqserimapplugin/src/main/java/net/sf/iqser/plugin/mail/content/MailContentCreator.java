@@ -32,6 +32,7 @@ import net.sf.iqser.plugin.mail.ZipAttachment;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
 
 import com.iqser.core.exception.IQserRuntimeException;
 import com.iqser.core.model.Attribute;
@@ -144,7 +145,8 @@ public class MailContentCreator {
 				content = mailContent.getContent();
 
 				if (content.getAttributeByName("MESSAGE_FOLDER") == null) {
-					Attribute attributeM = new Attribute("MESSAGE_FOLDER", folderN, Attribute.ATTRIBUTE_TYPE_TEXT, false);
+					Attribute attributeM = new Attribute("MESSAGE_FOLDER",
+							folderN, Attribute.ATTRIBUTE_TYPE_TEXT, false);
 					content.addAttribute(attributeM);
 				}
 
@@ -165,9 +167,9 @@ public class MailContentCreator {
 				.getAttachmentContents();
 		updateKeyAttachmentAttributes(attachmentContents, keyAttributesList);
 
-		//add owner for security filter
+		// add owner for security filter
 		addOwner(mailContent);
-		
+
 		return mailContent;
 	}
 
@@ -196,13 +198,15 @@ public class MailContentCreator {
 			updateAttributes(content, mappingAttributes);
 		}
 	}
-	
-	private void addOwner(MailContent mailContent){
-		//set owner for security filter
+
+	private void addOwner(MailContent mailContent) {
+		// set owner for security filter
 		Content content = mailContent.getContent();
-		content.addAttribute(new Attribute("owner", userName, Attribute.ATTRIBUTE_TYPE_TEXT, false));
+		content.addAttribute(new Attribute("owner", userName,
+				Attribute.ATTRIBUTE_TYPE_TEXT, false));
 		for (Content attContent : mailContent.getAttachmentContents()) {
-			attContent.addAttribute(new Attribute("owner", userName, Attribute.ATTRIBUTE_TYPE_TEXT, false));
+			attContent.addAttribute(new Attribute("owner", userName,
+					Attribute.ATTRIBUTE_TYPE_TEXT, false));
 		}
 	}
 
@@ -234,9 +238,9 @@ public class MailContentCreator {
 		assertProviderIDToContent(providerID, mailContent);
 		updateKeyAttributes(mailContent.getContent(), keyAttributesList);
 
-		//add owner for security filter
+		// add owner for security filter
 		addOwner(mailContent);
-		
+
 		return mailContent;
 	}
 
@@ -398,7 +402,7 @@ public class MailContentCreator {
 			assert messageContent != null;
 
 			if (messageContent instanceof Part) {
-				extractPartMessage(content, (Part)messageContent, 0);
+				extractPartMessage(content, (Part) messageContent, 0);
 			} else if (messageContent instanceof Multipart) {
 				int count = ((Multipart) messageContent).getCount();
 				int index = 0;
@@ -418,7 +422,8 @@ public class MailContentCreator {
 
 			} else {
 				if (messageContent != null) {
-					content.setFulltext(messageContent.toString());
+					content.setFulltext(Jsoup.parse(messageContent.toString())
+							.text());
 				}
 			}
 
@@ -457,15 +462,13 @@ public class MailContentCreator {
 		String fileName = messageContent.getFileName();
 
 		if (fileName == null) {
-
-			attributeM = createAttribute("MESSAGE_CONTENT_" + index,
-					messageContent.getContent().toString(), false);
-			content.setFulltext(((Part) messageContent).getContent().toString());
+			content.setFulltext(Jsoup.parse(
+					((Part) messageContent).getContent().toString()).text());
 
 			// does not have an attachment content
 			return null;
-		} else { 
-			
+		} else {
+
 			InputStream inputStream = messageContent.getInputStream();
 
 			if (fileName.endsWith(".zip")) {
@@ -475,11 +478,14 @@ public class MailContentCreator {
 				return zipAttachments;
 
 			} else {
-				Content attachmentContent = createAttachmentContent(fileName, inputStream);// fscp.getContent(inputStream);
+				Content attachmentContent = createAttachmentContent(fileName,
+						inputStream);// fscp.getContent(inputStream);
 				if (attachmentContent != null) {
-					attachmentContent.setContentUrl(content.getContentUrl() + fileName);
+					attachmentContent.setContentUrl(content.getContentUrl()
+							+ fileName);
 
-					Attribute attribute = createAttribute("ATTACHED_TO", content.getContentUrl(), true);
+					Attribute attribute = createAttribute("ATTACHED_TO",
+							content.getContentUrl(), true);
 					attachmentContent.addAttribute(attribute);
 
 					attributeM = createAttribute("MESSAGE_ATTACHMENTS_NAME_"
@@ -513,8 +519,8 @@ public class MailContentCreator {
 	 * @throws IOException
 	 *             exception for read attachments
 	 */
-	private Content createAttachmentContent(String fileName, InputStream inputStream)
-			throws FileParserException, IOException {
+	private Content createAttachmentContent(String fileName,
+			InputStream inputStream) throws FileParserException, IOException {
 
 		byte[] byteArray = IOUtils.toByteArray(inputStream);
 		FileParserFactory parserFactory = FileParserFactory.getInstance();
@@ -526,8 +532,7 @@ public class MailContentCreator {
 		}
 
 		return null;
-	}	
-	
+	}
 
 	/**
 	 * create address attributes for content.
@@ -585,10 +590,13 @@ public class MailContentCreator {
 	/**
 	 * creates an attribute for a content.
 	 * 
-	 * @param name the name of the attribute
-	 * @param value the value of the attribute
-	 * @param key the key of the attribute
-	 * @return the attribute  the created attribute
+	 * @param name
+	 *            the name of the attribute
+	 * @param value
+	 *            the value of the attribute
+	 * @param key
+	 *            the key of the attribute
+	 * @return the attribute the created attribute
 	 */
 	private Attribute createAttribute(String name, String value, boolean key) {
 		Attribute attribute = new Attribute();
@@ -603,7 +611,8 @@ public class MailContentCreator {
 	 * get the message ids from the mail server from each folder that is
 	 * specified in the configuration file.
 	 * 
-	 * @param sinceTime   a timestamp from the last synchronization
+	 * @param sinceTime
+	 *            a timestamp from the last synchronization
 	 * @return the collection of message-ids (collection of string)
 	 */
 	public Collection<String> getMailServerURLs(long sinceTime) {
@@ -687,10 +696,11 @@ public class MailContentCreator {
 
 	}
 
-	
 	/**
 	 * sets the folders that are scanned.
-	 * @param folders the server folders
+	 * 
+	 * @param folders
+	 *            the server folders
 	 */
 	public void setFolders(Collection<String> folders) {
 		this.folders = folders;
@@ -698,6 +708,7 @@ public class MailContentCreator {
 
 	/**
 	 * gets the folders that are scanned.
+	 * 
 	 * @return the folders that are scanned
 	 */
 	public Collection<String> getFolders() {
@@ -706,7 +717,9 @@ public class MailContentCreator {
 
 	/**
 	 * sets the ssl port.
-	 * @param sslPort the ssl port (default 993)
+	 * 
+	 * @param sslPort
+	 *            the ssl port (default 993)
 	 */
 	public void setSslPort(String sslPort) {
 		this.sslPort = sslPort;
@@ -714,7 +727,8 @@ public class MailContentCreator {
 
 	/**
 	 * gets the ssl port.
-	 * @return the ssl port (default 993) 
+	 * 
+	 * @return the ssl port (default 993)
 	 */
 	public String getSslPort() {
 		return sslPort;
@@ -722,7 +736,9 @@ public class MailContentCreator {
 
 	/**
 	 * sets the attribute map.
-	 * @param attributeMap a map with the new attribute names
+	 * 
+	 * @param attributeMap
+	 *            a map with the new attribute names
 	 */
 	public void setAttributeMap(Map<String, String> attributeMap) {
 		this.attributeMap = attributeMap;
@@ -730,6 +746,7 @@ public class MailContentCreator {
 
 	/**
 	 * gets the attribute map.
+	 * 
 	 * @return a map with the new attribute names
 	 */
 	public Map<String, String> getAttributeMap() {
@@ -777,7 +794,8 @@ public class MailContentCreator {
 	 * @param attributeMappings
 	 *            the new attributes
 	 */
-	public void updateAttributes(Content content, Map<String, String> attributeMappings) {
+	public void updateAttributes(Content content,
+			Map<String, String> attributeMappings) {
 
 		Collection<Attribute> attributes = content.getAttributes();
 
@@ -795,7 +813,9 @@ public class MailContentCreator {
 
 	/**
 	 * sets the server port (default 143).
-	 * @param port the server port (default 143)
+	 * 
+	 * @param port
+	 *            the server port (default 143)
 	 */
 	public void setPort(int port) {
 		this.port = port;
@@ -803,6 +823,7 @@ public class MailContentCreator {
 
 	/**
 	 * gets the server port (default 143).
+	 * 
 	 * @return port of the server (default 143)
 	 */
 	public int getPort() {
@@ -810,8 +831,10 @@ public class MailContentCreator {
 	}
 
 	/**
-	 * sets the cache flag. 
-	 * @param cache flag for synchronization
+	 * sets the cache flag.
+	 * 
+	 * @param cache
+	 *            flag for synchronization
 	 */
 	public void setCache(String cache) {
 		this.cache = cache;
@@ -819,6 +842,7 @@ public class MailContentCreator {
 
 	/**
 	 * gets the cache flag.
+	 * 
 	 * @return the flag of the cache
 	 */
 	public String getCache() {
