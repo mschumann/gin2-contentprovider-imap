@@ -418,10 +418,7 @@ public class MailContentCreator {
 
 			} else {
 				if (messageContent != null) {
-					attributeM = createAttribute("MESSAGE_CONTENT_0",
-							messageContent.toString(), false);
 					content.setFulltext(messageContent.toString());
-					content.addAttribute(attributeM);
 				}
 			}
 

@@ -80,9 +80,12 @@ public class MailServerUtils {
 				.search(new HeaderTerm("MESSAGE-ID", mailID));
 
 		if (messages.length == 0) {
-			logger.fatal("no messages with specified id identified");
-			throw new IQserRuntimeException(
-					"no messages with specified id identified");
+			if (logger.isDebugEnabled()) {
+				logger.debug(String.format(
+						"Cannot find the mesaage with id %s in folder %s.",
+						mailID, folder.getName()));
+			}
+			return null;
 		} else
 			return messages[0];
 	}
