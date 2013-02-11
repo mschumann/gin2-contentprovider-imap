@@ -3,21 +3,23 @@ package net.sf.iqser.plugin.mail.content;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.iqser.core.model.Content;
 
 /**
  * the mail content bean.
+ * 
  * @author alexandru.galos
- *
+ * 
  */
 public class MailContent {
 
-	
 	/**
 	 * the content of the mail.
 	 */
 	private Content content;
-	
+
 	/**
 	 * the content of the attachments.
 	 */
@@ -25,7 +27,9 @@ public class MailContent {
 
 	/**
 	 * sets the mail content.
-	 * @param content the mail content
+	 * 
+	 * @param content
+	 *            the mail content
 	 */
 	public void setContent(Content content) {
 		this.content = content;
@@ -33,7 +37,8 @@ public class MailContent {
 
 	/**
 	 * gets the mail content.
-	 * @return  the mail content
+	 * 
+	 * @return the mail content
 	 */
 	public Content getContent() {
 		return content;
@@ -41,7 +46,9 @@ public class MailContent {
 
 	/**
 	 * sets a collection of attachment contents.
-	 * @param attachmentContents a list of attachment contents
+	 * 
+	 * @param attachmentContents
+	 *            a list of attachment contents
 	 */
 	public void setAttachmentContents(Collection<Content> attachmentContents) {
 		this.attachmentContents = attachmentContents;
@@ -49,19 +56,25 @@ public class MailContent {
 
 	/**
 	 * gets the attachment contents.
+	 * 
 	 * @return a collection of attachment contents
 	 */
 	public Collection<Content> getAttachmentContents() {
 		return attachmentContents;
 	}
-	
+
 	/**
 	 * adds a new element to the attachment contents.
-	 * @param messageContent the message content that is added
+	 * 
+	 * @param messageContent
+	 *            the message content that is added
 	 */
-	public void addAttachmentContent(Content messageContent){
+	public void addAttachmentContent(Content messageContent) {
+		// assert that the attachment has a content type
+		if (StringUtils.isEmpty(messageContent.getType())) {
+			messageContent.setType("EMAIL-ATTACHMENT");
+		}
 		attachmentContents.add(messageContent);
 	}
-	
-		
+
 }

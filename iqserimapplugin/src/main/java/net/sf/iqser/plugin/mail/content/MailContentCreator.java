@@ -123,10 +123,11 @@ public class MailContentCreator {
 		Message messageBuf = null;
 		String folderN = null;
 		Content content = null;
+		Folder folder = null;
 		try {
 			// search each folder for a certain mail message
 			for (String folderName : folders) {
-				Folder folder = store.getFolder(folderName);
+				folder = store.getFolder(folderName);
 				Message message = msu.identifyMessage(folder, contentURL);
 				if (message != null) {
 					messageBuf = message;
@@ -155,6 +156,13 @@ public class MailContentCreator {
 		} catch (Exception e) {
 			throw new IQserRuntimeException(e);
 		} finally {
+			if(folder != null && folder.isOpen()) {
+				try {
+					folder.close(false);
+				} catch (MessagingException e) {
+					throw new IQserRuntimeException(e);
+				}
+			}
 			try {
 				store.close();
 			} catch (MessagingException e) {
