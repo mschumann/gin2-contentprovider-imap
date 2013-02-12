@@ -444,11 +444,12 @@ public class MailServerContentProvider extends AbstractContentProvider {
 										getName());
 						Content content = mailContent.getContent();
 						content.setProvider(getName());
-						addContent(content);
+						addToRepository(content);
 						Collection<Content> attachmentContents = mailContent
 								.getAttachmentContents();
 						for (Content attachmentContent : attachmentContents) {
-							addContent(attachmentContent);
+							addToRepository(attachmentContent);
+
 						}
 					}
 				} catch (Exception e) {
@@ -460,6 +461,16 @@ public class MailServerContentProvider extends AbstractContentProvider {
 			time = nexttime;
 		} catch (Throwable t) {
 			throw new IQserRuntimeException(t);
+		}
+	}
+
+	private void addToRepository(Content content) throws IQserException {
+		if (!isExistingContent(content.getContentUrl())) {
+			addContent(content);
+		} else {
+			logger.warn(String
+					.format("The message with id %s already exists in the repository. Skipping the message.",
+							content.getContentUrl()));
 		}
 	}
 
