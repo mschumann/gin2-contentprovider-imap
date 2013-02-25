@@ -210,10 +210,10 @@ public class MailContentCreator {
 	private void addOwner(MailContent mailContent) {
 		// set owner for security filter
 		Content content = mailContent.getContent();
-		content.addAttribute(new Attribute("owner", userName,
+		content.addAttribute(new Attribute("OWNER", userName,
 				Attribute.ATTRIBUTE_TYPE_TEXT, false));
 		for (Content attContent : mailContent.getAttachmentContents()) {
-			attContent.addAttribute(new Attribute("owner", userName,
+			attContent.addAttribute(new Attribute("OWNER", userName,
 					Attribute.ATTRIBUTE_TYPE_TEXT, false));
 		}
 	}
@@ -609,7 +609,7 @@ public class MailContentCreator {
 	private Attribute createAttribute(String name, String value, boolean key) {
 		Attribute attribute = new Attribute();
 		attribute.setKey(key);
-		attribute.setName(name);
+		attribute.setName(name.toUpperCase().replace(' ', '_'));
 		attribute.setValue(value);
 		attribute.setType(Attribute.ATTRIBUTE_TYPE_TEXT);
 		return attribute;

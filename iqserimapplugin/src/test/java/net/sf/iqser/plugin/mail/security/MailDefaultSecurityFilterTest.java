@@ -23,11 +23,11 @@ public class MailDefaultSecurityFilterTest extends PluginTestCase {
 		
 		c1 = new Content();
 		c1.setContentId(1);
-		c1.addAttribute(new Attribute("owner","john",Attribute.ATTRIBUTE_TYPE_TEXT, false));
+		c1.addAttribute(new Attribute("OWNER","john",Attribute.ATTRIBUTE_TYPE_TEXT, false));
 		
 		c2 = new Content();
 		c2.setContentId(2);
-		c2.addAttribute(new Attribute("owner","mary",Attribute.ATTRIBUTE_TYPE_TEXT, false));
+		c2.addAttribute(new Attribute("OWNER","mary",Attribute.ATTRIBUTE_TYPE_TEXT, false));
 
 	}
 	
