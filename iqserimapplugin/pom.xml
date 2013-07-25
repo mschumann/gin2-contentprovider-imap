@@ -445,26 +445,6 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<preparationGoals>clean verify</preparationGoals>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>javadoc-jar</id>
-						<phase>package</phase>
-						<goals>
-							<goal>aggregate-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
 				<executions>
 					<execution>
@@ -721,6 +701,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.5.2</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -729,6 +710,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-pmd-plugin</artifactId>
+				<version>2.7.1</version>
 				<configuration>
 					<targetJdk>${compileSource}</targetJdk>
 				</configuration>
