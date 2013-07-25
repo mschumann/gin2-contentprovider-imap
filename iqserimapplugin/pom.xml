@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>net.sf.iqser.plugin.email</groupId>
@@ -28,14 +27,10 @@
 	</issueManagement>
 
 	<scm>
-		<connection>
-			scm:svn:http://iqserimapplugin.svn.sourceforge.net/viewvc/iqserimapplugin/trunk
+		<connection>scm:svn:http://iqserimapplugin.svn.sourceforge.net/viewvc/iqserimapplugin/trunk
 		</connection>
-		<developerConnection>
-			scm:svn:https://iqserimapplugin.svn.sourceforge.net/svnroot/iqserimapplugin/trunk
-		</developerConnection>
-		<url>http://iqserimapplugin.svn.sourceforge.net/viewvc/iqserimapplugin
-		</url>
+		<developerConnection>scm:svn:https://iqserimapplugin.svn.sourceforge.net/svnroot/iqserimapplugin/trunk</developerConnection>
+		<url>http://iqserimapplugin.svn.sourceforge.net/viewvc/iqserimapplugin</url>
 	</scm>
 
 	<developers>
@@ -96,13 +91,15 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<iqser.version>2.0.0.36-SNAPSHOT</iqser.version>
+		<iqser.version>2.0</iqser.version>
 		<compileSource>1.6</compileSource>
 		<sourceforge.artifact>${project.build.directory}/${project.build.finalName}</sourceforge.artifact>
-		<sourceforge.upload>${sf.username},iqserimapplugin@frs.sourceforge.net:/home/pfs/project/i/iq/iqserimapplugin</sourceforge.upload>
+		<sourceforge.upload>${sf.username},${project.artifactId}@frs.sourceforge.net:/home/pfs/project/i/iq/${project.artifactId}</sourceforge.upload>
 	</properties>
 
 	<repositories>
+		<!-- TODO: just one repository for sourceforge release and one for snapshot for ALL plugins => less server entries in .m2/settings.xml => same repository 
+			entries in all <plugin>/pom.xml -->
 		<repository>
 			<id>iqser_release</id>
 			<name>Artifactory Mirror</name>
@@ -115,25 +112,25 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>iqserfileplugin-repo</id>
-			<name>iQser File Plugin Repository</name>
-			<url>http://iqserfileplugin.sourceforge.net/maven2</url>
+			<id>iqserimapplugin-repo-snapshot</id>
+			<name>iQser IMAP Plugin Snapshot Repository</name>
+			<url>http://${project.artifactId}.sourceforge.net/maven2-snap</url>
 			<releases>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</releases>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 		<repository>
-			<id>iqserfileplugin-repo-snap</id>
-			<name>iQser File Plugin Snapshot Repository</name>
-			<url>http://iqserfileplugin.sourceforge.net/maven2-snap</url>
+			<id>iqserimapplugin-repo</id>
+			<name>iQser Imap Plugin Repository</name>
+			<url>http://${project.artifactId}.sourceforge.net/maven2</url>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
@@ -156,28 +153,88 @@
 		<repository>
 			<id>iqserimapplugin-repo</id>
 			<name>iQserIMAPContentProvider-Repository</name>
-			<url>
-				sftp://web.sourceforge.net/home/project-web/iqserimapplugin/htdocs/maven2
-			</url>
+			<url>sftp://web.sourceforge.net/home/project-web/${project.artifactId}/htdocs/maven2</url>
 		</repository>
 		<snapshotRepository>
-			<id>iqserimapplugin-repo-snap</id>
+			<id>iqserimapplugin-repo-snapshot</id>
 			<name>iQserIMAPContentProvider-Snapshot-Repository</name>
-			<url>
-				sftp://web.sourceforge.net/home/project-web/iqserimapplugin/htdocs/maven2-snap
-			</url>
+			<url>sftp://web.sourceforge.net/home/project-web/${project.artifactId}/htdocs/maven2-snap</url>
 			<uniqueVersion>false</uniqueVersion>
 		</snapshotRepository>
 		<site>
 			<id>iqserimapplugin.sourceforge.net</id>
 			<name>IMAP ContentProvider for iQser GIN</name>
-			<url>sftp://web.sourceforge.net/home/project-web/iqserimapplugin/htdocs
-			</url>
+			<url>sftp://web.sourceforge.net/home/project-web/${project.artifactId}/htdocs</url>
 		</site>
 	</distributionManagement>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+					<source>${java.source.version}</source>
+					<target>${java.target.version}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<forkMode>always</forkMode>
+					<childDelegation>false</childDelegation>
+					<argLine>-Djava.awt.headless=true</argLine>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+					<excludes>
+						<exclude>**/*TestCase.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<configuration>
+					<linkXref>true</linkXref>
+					<sourceEncoding>utf-8</sourceEncoding>
+					<minimumTokens>100</minimumTokens>
+					<targetJdk>1.5</targetJdk>
+					<excludes />
+				</configuration>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>check</goal>
+							<goal>cpd-check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>com.iqser</groupId>
+						<artifactId>iqser-qa</artifactId>
+						<version>1.0</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>checkstyle</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<configLocation>checkstyle/checkstyle.xml</configLocation>
+					<failsOnError>true</failsOnError>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -199,17 +256,27 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<dependencies>
+					<dependency>
+						<groupId>ant</groupId>
+						<artifactId>ant-jsch</artifactId>
+						<version>1.6.5</version>
+					</dependency>
+					<dependency>
+						<groupId>jsch</groupId>
+						<artifactId>jsch</artifactId>
+						<version>0.1.25</version>
+					</dependency>
+				</dependencies>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>copy zip to gin</id>
+						<id>rename zip to gin</id>
 						<phase>package</phase>
 						<configuration>
 							<target>
-								<copy
-									file="${project.build.directory}/${project.build.finalName}.zip"
-									tofile="${project.build.directory}/${project.build.finalName}.gin" />
+								<copy file="${project.build.directory}/${project.build.finalName}.zip" tofile="${project.build.directory}/${project.build.finalName}.gin" />
 							</target>
 						</configuration>
 						<goals>
@@ -225,10 +292,75 @@
 						<configuration>
 							<target>
 								<echo message="Preparing ginplugin.xml" />
-								<copy failonerror="true"
-									file="${basedir}/src/main/assembly/ginplugin.xml" tofile="${basedir}/target/generated-resources/ginplugin.xml" />
-								<replace file="${basedir}/target/generated-resources/ginplugin.xml"
-									token="###PROJECT_VERSION###" value="${project.version}" />
+								<copy failonerror="true" file="${basedir}/src/main/assembly/ginplugin.xml" tofile="${basedir}/target/generated-resources/ginplugin.xml" />
+								<replace file="${basedir}/target/generated-resources/ginplugin.xml" token="###VERSION###" value="${project.version}" />
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>publish_gin</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<tasks>
+								<scp todir="${sourceforge.upload}" password="${sf.password}" trust="true">
+									<fileset dir="${project.build.directory}">
+										<include name="${project.build.finalName}*.gin" />
+									</fileset>
+								</scp>
+							</tasks>
+						</configuration>
+					</execution>
+					<execution>
+						<id>publish_jar</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo message="Copy JAR (${project.build.finalName}) to sourceforge" />
+								<scp todir="${sourceforge.upload}" password="${sf.password}" trust="true">
+									<fileset dir="${project.build.directory}/">
+										<include name="${project.build.finalName}.jar" />
+									</fileset>
+								</scp>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>publish_sources</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo message="Copy ${project.build.finalName}-sources.jar to sourceforge" />
+								<scp todir="${sourceforge.upload}" password="${sf.password}" trust="true">
+									<fileset dir="${project.build.directory}/">
+										<include name="${project.build.finalName}-sources.jar" />
+									</fileset>
+								</scp>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>publish_javadoc</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<echo message="Copy javadoc Archive (${project.build.finalName}) to sourceforge." />
+								<scp todir="${sourceforge.upload}" password="${sf.password}" trust="true">
+									<fileset dir="${project.build.directory}/">
+										<include name="${project.build.finalName}-javadoc.jar" />
+									</fileset>
+								</scp>
 							</target>
 						</configuration>
 					</execution>
@@ -254,70 +386,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<fork>true</fork>
-					<source>${java.source.version}</source>
-					<target>${java.target.version}</target>
-					<encoding>${project.build.sourceEncoding}</encoding>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<forkMode>always</forkMode>
-					<childDelegation>false</childDelegation>
-					<argLine>-Djava.awt.headless=true</argLine>
-					<includes>
-						<include>**/*Test.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/*TestCase.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>check</goal>
-							<goal>cpd-check</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<linkXref>true</linkXref>
-					<sourceEncoding>utf-8</sourceEncoding>
-					<minimumTokens>100</minimumTokens>
-					<targetJdk>1.5</targetJdk>
-					<excludes />
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>com.iqser</groupId>
-						<artifactId>iqser-qa</artifactId>
-						<version>1.0</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>checkstyle</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<configLocation>checkstyle/checkstyle.xml</configLocation>
-					<failsOnError>true</failsOnError>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -398,7 +466,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -409,46 +476,64 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>ant</groupId>
-						<artifactId>ant-jsch</artifactId>
-						<version>1.6.5</version>
-					</dependency>
-					<dependency>
-						<groupId>jsch</groupId>
-						<artifactId>jsch</artifactId>
-						<version>0.1.25</version>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>publish_jar</id>
-						<phase>deploy</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<tasks>
-								<scp todir="${sourceforge.upload}" password="${sf.password}"
-									trust="true">
-									<fileset dir="${project.build.directory}">
-										<include name="${project.build.finalName}*.jar" />
-									</fileset>
-								</scp>
-							</tasks>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
+			<!-- <plugin> -->
+			<!-- <artifactId>maven-antrun-plugin</artifactId> -->
+			<!-- <dependencies> -->
+			<!-- <dependency> -->
+			<!-- <groupId>ant</groupId> -->
+			<!-- <artifactId>ant-jsch</artifactId> -->
+			<!-- <version>1.6.5</version> -->
+			<!-- </dependency> -->
+			<!-- <dependency> -->
+			<!-- <groupId>jsch</groupId> -->
+			<!-- <artifactId>jsch</artifactId> -->
+			<!-- <version>0.1.25</version> -->
+			<!-- </dependency> -->
+			<!-- </dependencies> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <id>publish_jar</id> -->
+			<!-- <phase>deploy</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>run</goal> -->
+			<!-- </goals> -->
+			<!-- <configuration> -->
+			<!-- <tasks> -->
+			<!-- <scp todir="${sourceforge.upload}" password="${sf.password}" trust="true"> -->
+			<!-- <fileset dir="${project.build.directory}"> -->
+			<!-- <include name="${project.build.finalName}*.jar" /> -->
+			<!-- </fileset> -->
+			<!-- </scp> -->
+			<!-- </tasks> -->
+			<!-- </configuration> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>2.2</version>
+				<dependencies>
+					<!-- additional dependencies required by "source-class" implementations are added here -->
+					<dependency>
+						<groupId>org.tinyjee.dim</groupId>
+						<artifactId>doxia-include-macro</artifactId>
+						<version>1.1</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>deploy_site</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>site</goal>
+							<goal>deploy</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
+
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>
@@ -461,7 +546,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>2.3.2</version>
+					<version>3.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -571,9 +656,11 @@
 					<artifactId>maven-jxr-plugin</artifactId>
 					<version>2.1</version>
 				</plugin>
-
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.1.2</version>
+				</plugin>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
