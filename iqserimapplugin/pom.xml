@@ -486,6 +486,24 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Optionally initializes & configures the macro (in particular adds support for multimodule projects ) -->
+			<!-- This also fixes the basedir issue in multimodule builds (see http://jira.codehaus.org/browse/DOXIA-373) -->
+			<plugin>
+				<groupId>org.tinyjee.dim</groupId>
+				<artifactId>doxia-include-macro</artifactId>
+				<version>1.1</version>
+				<executions>
+					<execution>
+						<id>initialize-doxia-include-macro</id>
+						<!-- Use "initialize" when the 'site' was not given as 'phase'. -->
+						<!-- phase>initialize</phase -->
+						<phase>pre-site</phase>
+						<goals>
+							<goal>initialize</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<extensions>

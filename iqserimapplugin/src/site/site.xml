@@ -11,13 +11,13 @@
 
 		<menu name="Welcome">
 			<item name="Introduction" href="index.html"/>
-			<item name="Support" href="support.html"/>
+<!-- 			<item name="Support" href="support.html"/> -->
 			<item name="Download" href="http://sourceforge.net/projects/iqserimapplugin/files/"/>
 			<item name="Join us" href="contribution.html"/>
 		</menu>
 
 		<menu name="Documentation">
-			<item name="Wiki" href="http://sourceforge.net/apps/trac/iqserimapplugin/wiki"/>
+<!-- 			<item name="Wiki" href="http://sourceforge.net/apps/trac/iqserimapplugin/wiki"/> -->
 			<item name="Javadocs" href="apidocs/index.html"/>
 		</menu>
 
